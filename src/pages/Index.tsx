@@ -67,9 +67,11 @@ const Index = () => {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="border-white hover:bg-white text-blue-600">
-                  Upload Prescription
-                </Button>
+                <Link to="/upload-prescription">
+                  <Button size="lg" variant="outline" className="border-white hover:bg-white text-blue-600">
+                    Upload Prescription
+                  </Button>
+                </Link>
               </div>
             </div>
             <div className="relative">

@@ -55,20 +55,17 @@ const Header = () => {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="hidden md:flex items-center space-x-8 py-3 border-t">
-          <Link to="/products" className="text-gray-700 hover:text-blue-600 transition-colors">
+        <nav className="hidden md:flex items-center space-x-12 py-3 border-t">
+          <Link to="/products" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
             All Products
           </Link>
-          <Link to="/products?category=prescription" className="text-gray-700 hover:text-blue-600 transition-colors">
-            Prescription
+          <Link to="/upload-prescription" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+            Upload Prescription
           </Link>
-          <Link to="/products?category=otc" className="text-gray-700 hover:text-blue-600 transition-colors">
-            Over-the-Counter
-          </Link>
-          <Link to="/products?category=supplements" className="text-gray-700 hover:text-blue-600 transition-colors">
+          <Link to="/products?category=supplements" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
             Supplements
           </Link>
-          <Link to="/products?category=personal-care" className="text-gray-700 hover:text-blue-600 transition-colors">
+          <Link to="/products?category=personal-care" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
             Personal Care
           </Link>
         </nav>
