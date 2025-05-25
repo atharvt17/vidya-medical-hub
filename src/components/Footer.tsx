@@ -38,9 +38,7 @@ const Footer = () => {
               <p className="text-gray-300 text-sm mb-4">
                 Your trusted partner in healthcare. Providing authentic medicines and healthcare products with care.
               </p>
-              <p className="text-gray-400 text-xs">
-                Licensed Pharmacy | Est. 2020
-              </p>
+              <p className="text-gray-400 text-xs">Licensed Pharmacy | Est. 2018</p>
             </div>
             
             <div>
