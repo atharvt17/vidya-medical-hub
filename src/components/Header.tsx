@@ -39,21 +39,23 @@ const Header = () => {
 
           {/* Navigation Icons */}
           <div className="flex items-center space-x-6">
-            <Button variant="ghost" size="sm" className="hidden md:flex">
-              <Heart className="h-5 w-5 mr-2" />
-              Wishlist
-            </Button>
-            <Link to="/cart">
-              <Button variant="ghost" size="sm" className="relative">
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Cart
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
+            <SignedIn>
+              <Button variant="ghost" size="sm" className="hidden md:flex">
+                <Heart className="h-5 w-5 mr-2" />
+                Wishlist
               </Button>
-            </Link>
+              <Link to="/cart">
+                <Button variant="ghost" size="sm" className="relative">
+                  <ShoppingCart className="h-5 w-5 mr-2" />
+                  Cart
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+            </SignedIn>
             <SignedOut>
               <SignInButton>
                 <Button variant="ghost" size="sm">

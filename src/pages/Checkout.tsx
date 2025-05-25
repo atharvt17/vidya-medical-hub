@@ -1,7 +1,8 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CreditCard, Truck, MapPin, Phone, Mail, Lock } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,33 +11,83 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [deliveryOption, setDeliveryOption] = useState("standard");
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { user } = useUser();
+  const navigate = useNavigate();
 
-  const cartItems = [
-    {
-      id: 1,
-      name: "Paracetamol 500mg",
-      price: 25.50,
-      quantity: 2,
-      brand: "Cipla"
-    },
-    {
-      id: 2,
-      name: "Vitamin D3 Tablets",
-      price: 180.00,
-      quantity: 1,
-      brand: "HealthKart"
-    }
-  ];
-
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = getCartTotal();
   const deliveryFee = deliveryOption === "express" ? 100 : (subtotal > 500 ? 0 : 50);
   const total = subtotal + deliveryFee;
+
+  const handlePlaceOrder = async () => {
+    if (!user) {
+      toast.error("Please sign in to place an order");
+      return;
+    }
+
+    setIsPlacingOrder(true);
+    
+    try {
+      // Simulate order creation
+      const orderData = {
+        userId: user.id,
+        userEmail: user.primaryEmailAddress?.emailAddress,
+        items: cartItems,
+        subtotal,
+        deliveryFee,
+        total,
+        paymentMethod,
+        deliveryOption,
+        orderDate: new Date().toISOString(),
+        status: "pending"
+      };
+
+      console.log("Creating order:", orderData);
+
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Clear cart and show success
+      clearCart();
+      toast.success("Order placed successfully! You will receive a confirmation email shortly.");
+      
+      // Redirect to success page or home
+      navigate("/");
+      
+    } catch (error) {
+      console.error("Error placing order:", error);
+      toast.error("Failed to place order. Please try again.");
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
+            <p className="text-gray-600 mb-8">Add some items to your cart before checkout.</p>
+            <Link to="/products">
+              <Button size="lg">Continue Shopping</Button>
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,7 +122,12 @@ const Checkout = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="email">Email Address *</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      defaultValue={user?.primaryEmailAddress?.emailAddress || ""} 
+                      placeholder="john@example.com" 
+                    />
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone Number *</Label>
@@ -299,9 +355,14 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                <Button size="lg" className="w-full mt-6">
+                <Button 
+                  size="lg" 
+                  className="w-full mt-6" 
+                  onClick={handlePlaceOrder}
+                  disabled={isPlacingOrder}
+                >
                   <Lock className="h-4 w-4 mr-2" />
-                  Place Order
+                  {isPlacingOrder ? "Placing Order..." : "Place Order"}
                 </Button>
 
                 <div className="mt-4 space-y-1 text-xs text-gray-500 text-center">

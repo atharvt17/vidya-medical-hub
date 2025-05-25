@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
-import { ShoppingCart, Star } from "lucide-react";
+import { ShoppingCart, Star, Heart } from "lucide-react";
+import { SignedIn, SignedOut, useSignIn } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { signIn } = useSignIn();
 
   const handleAddToCart = () => {
     addToCart({
@@ -36,6 +38,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
       prescription: product.prescription
     });
     toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleUnauthenticatedAction = () => {
+    signIn?.redirectToSignIn();
   };
 
   return (
@@ -77,15 +83,29 @@ const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
           
-          <Button 
-            onClick={handleAddToCart}
-            disabled={!product.inStock}
-            className="w-full mt-3"
-            size="sm"
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            {product.inStock ? 'Add to Cart' : 'Out of Stock'}
-          </Button>
+          <SignedIn>
+            <Button 
+              onClick={handleAddToCart}
+              disabled={!product.inStock}
+              className="w-full mt-3"
+              size="sm"
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+            </Button>
+          </SignedIn>
+          
+          <SignedOut>
+            <Button 
+              onClick={handleUnauthenticatedAction}
+              disabled={!product.inStock}
+              className="w-full mt-3"
+              size="sm"
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+            </Button>
+          </SignedOut>
         </div>
       </CardContent>
     </Card>

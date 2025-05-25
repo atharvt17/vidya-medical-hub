@@ -1,10 +1,12 @@
-
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Star, Heart, Truck, Shield, Clock, Plus, Minus } from "lucide-react";
+import { SignedIn, SignedOut, useSignIn } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -12,6 +14,8 @@ const ProductDetails = () => {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { addToCart } = useCart();
+  const { signIn } = useSignIn();
 
   // Mock product data
   const product = {
@@ -44,6 +48,28 @@ const ProductDetails = () => {
     { icon: Shield, title: "Authentic Product", description: "100% genuine medicines" },
     { icon: Clock, title: "24/7 Support", description: "Expert pharmacist available" }
   ];
+
+  const handleAddToCart = () => {
+    for (let i = 0; i < quantity; i++) {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0],
+        brand: product.brand,
+        prescription: product.prescription
+      });
+    }
+    toast.success(`${quantity} x ${product.name} added to cart!`);
+  };
+
+  const handleAddToWishlist = () => {
+    toast.success(`${product.name} added to wishlist!`);
+  };
+
+  const handleUnauthenticatedAction = () => {
+    signIn?.redirectToSignIn();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -158,14 +184,27 @@ const ProductDetails = () => {
                 </span>
               </div>
 
-              <div className="flex gap-4">
-                <Button size="lg" className="flex-1">
-                  Add to Cart
-                </Button>
-                <Button variant="outline" size="lg">
-                  <Heart className="h-5 w-5" />
-                </Button>
-              </div>
+              <SignedIn>
+                <div className="flex gap-4">
+                  <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+                    Add to Cart
+                  </Button>
+                  <Button variant="outline" size="lg" onClick={handleAddToWishlist}>
+                    <Heart className="h-5 w-5" />
+                  </Button>
+                </div>
+              </SignedIn>
+
+              <SignedOut>
+                <div className="flex gap-4">
+                  <Button size="lg" className="flex-1" onClick={handleUnauthenticatedAction}>
+                    Add to Cart
+                  </Button>
+                  <Button variant="outline" size="lg" onClick={handleUnauthenticatedAction}>
+                    <Heart className="h-5 w-5" />
+                  </Button>
+                </div>
+              </SignedOut>
 
               {product.prescription && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Filter, Grid, List, Star, Heart } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Filter, Grid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -9,12 +9,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ProductCard from "@/components/ProductCard";
 
 const Products = () => {
+  const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(true);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [prescriptionOnly, setPrescriptionOnly] = useState(false);
 
-  const products = [
+  const allProducts = [
     {
       id: 1,
       name: "Paracetamol 500mg",
@@ -95,6 +102,45 @@ const Products = () => {
     }
   ];
 
+  // Filter products based on selected filters
+  const filteredProducts = allProducts.filter(product => {
+    // Category filter
+    if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
+      return false;
+    }
+    
+    // Brand filter
+    if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand.toLowerCase().replace(/\s+/g, ''))) {
+      return false;
+    }
+    
+    // Price range filter
+    if (selectedPriceRanges.length > 0) {
+      const priceInRange = selectedPriceRanges.some(range => {
+        switch (range) {
+          case 'under-50': return product.price < 50;
+          case '50-100': return product.price >= 50 && product.price <= 100;
+          case '100-200': return product.price >= 100 && product.price <= 200;
+          case 'above-200': return product.price > 200;
+          default: return false;
+        }
+      });
+      if (!priceInRange) return false;
+    }
+    
+    // Stock filter
+    if (inStockOnly && !product.inStock) {
+      return false;
+    }
+    
+    // Prescription filter
+    if (prescriptionOnly && !product.prescription) {
+      return false;
+    }
+    
+    return true;
+  });
+
   const categories = [
     { id: "prescription", name: "Prescription", count: 24 },
     { id: "otc", name: "Over-the-Counter", count: 18 },
@@ -107,8 +153,32 @@ const Products = () => {
     { id: "cipla", name: "Cipla", count: 12 },
     { id: "healthkart", name: "HealthKart", count: 8 },
     { id: "dettol", name: "Dettol", count: 6 },
-    { id: "johnson", name: "Johnson's", count: 9 }
+    { id: "johnson's", name: "Johnson's", count: 9 }
   ];
+
+  const handleCategoryChange = (categoryId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCategories([...selectedCategories, categoryId]);
+    } else {
+      setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
+    }
+  };
+
+  const handleBrandChange = (brandId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedBrands([...selectedBrands, brandId]);
+    } else {
+      setSelectedBrands(selectedBrands.filter(id => id !== brandId));
+    }
+  };
+
+  const handlePriceRangeChange = (rangeId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedPriceRanges([...selectedPriceRanges, rangeId]);
+    } else {
+      setSelectedPriceRanges(selectedPriceRanges.filter(id => id !== rangeId));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,7 +198,7 @@ const Products = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">All Products</h1>
-            <p className="text-gray-600">Showing {products.length} products</p>
+            <p className="text-gray-600">Showing {filteredProducts.length} products</p>
           </div>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
             <Select defaultValue="featured">
@@ -182,7 +252,11 @@ const Products = () => {
                   <div className="space-y-3">
                     {categories.map((category) => (
                       <div key={category.id} className="flex items-center space-x-2">
-                        <Checkbox id={category.id} />
+                        <Checkbox 
+                          id={category.id} 
+                          checked={selectedCategories.includes(category.id)}
+                          onCheckedChange={(checked) => handleCategoryChange(category.id, checked as boolean)}
+                        />
                         <Label htmlFor={category.id} className="text-sm flex-1 cursor-pointer">
                           {category.name}
                         </Label>
@@ -200,7 +274,11 @@ const Products = () => {
                   <div className="space-y-3">
                     {brands.map((brand) => (
                       <div key={brand.id} className="flex items-center space-x-2">
-                        <Checkbox id={brand.id} />
+                        <Checkbox 
+                          id={brand.id} 
+                          checked={selectedBrands.includes(brand.id)}
+                          onCheckedChange={(checked) => handleBrandChange(brand.id, checked as boolean)}
+                        />
                         <Label htmlFor={brand.id} className="text-sm flex-1 cursor-pointer">
                           {brand.name}
                         </Label>
@@ -217,19 +295,35 @@ const Products = () => {
                   <h3 className="font-semibold text-gray-900 mb-4">Price Range</h3>
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="under-50" />
+                      <Checkbox 
+                        id="under-50" 
+                        checked={selectedPriceRanges.includes('under-50')}
+                        onCheckedChange={(checked) => handlePriceRangeChange('under-50', checked as boolean)}
+                      />
                       <Label htmlFor="under-50" className="text-sm cursor-pointer">Under ₹50</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="50-100" />
+                      <Checkbox 
+                        id="50-100" 
+                        checked={selectedPriceRanges.includes('50-100')}
+                        onCheckedChange={(checked) => handlePriceRangeChange('50-100', checked as boolean)}
+                      />
                       <Label htmlFor="50-100" className="text-sm cursor-pointer">₹50 - ₹100</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="100-200" />
+                      <Checkbox 
+                        id="100-200" 
+                        checked={selectedPriceRanges.includes('100-200')}
+                        onCheckedChange={(checked) => handlePriceRangeChange('100-200', checked as boolean)}
+                      />
                       <Label htmlFor="100-200" className="text-sm cursor-pointer">₹100 - ₹200</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="above-200" />
+                      <Checkbox 
+                        id="above-200" 
+                        checked={selectedPriceRanges.includes('above-200')}
+                        onCheckedChange={(checked) => handlePriceRangeChange('above-200', checked as boolean)}
+                      />
                       <Label htmlFor="above-200" className="text-sm cursor-pointer">Above ₹200</Label>
                     </div>
                   </div>
@@ -242,11 +336,19 @@ const Products = () => {
                   <h3 className="font-semibold text-gray-900 mb-4">Availability</h3>
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="in-stock" />
+                      <Checkbox 
+                        id="in-stock" 
+                        checked={inStockOnly}
+                        onCheckedChange={(checked) => setInStockOnly(checked as boolean)}
+                      />
                       <Label htmlFor="in-stock" className="text-sm cursor-pointer">In Stock</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="prescription-required" />
+                      <Checkbox 
+                        id="prescription-required" 
+                        checked={prescriptionOnly}
+                        onCheckedChange={(checked) => setPrescriptionOnly(checked as boolean)}
+                      />
                       <Label htmlFor="prescription-required" className="text-sm cursor-pointer">Prescription Required</Label>
                     </div>
                   </div>
@@ -258,63 +360,29 @@ const Products = () => {
           {/* Products Grid */}
           <div className="flex-1">
             <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
-              {products.map((product) => (
-                <Card key={product.id} className="group hover:shadow-lg transition-all duration-300">
-                  <CardContent className="p-0">
-                    <div className="relative">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-48 object-cover rounded-t-lg"
-                      />
-                      {!product.inStock && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-t-lg">
-                          <span className="text-white font-semibold">Out of Stock</span>
-                        </div>
-                      )}
-                      {product.prescription && (
-                        <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                          Rx Required
-                        </div>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="absolute top-2 right-2 bg-white hover:bg-gray-100"
-                      >
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-500">{product.brand}</span>
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span className="text-sm text-gray-600 ml-1">{product.rating}</span>
-                          <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
-                        </div>
-                      </div>
-                      <Link to={`/product/${product.id}`}>
-                        <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                          {product.name}
-                        </h3>
-                      </Link>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-lg font-bold text-gray-900">₹{product.price}</span>
-                          {product.originalPrice > product.price && (
-                            <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
-                          )}
-                        </div>
-                        <Button size="sm" disabled={!product.inStock}>
-                          Add to Cart
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
+            
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">No products found matching your filters.</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSelectedCategories([]);
+                    setSelectedBrands([]);
+                    setSelectedPriceRanges([]);
+                    setInStockOnly(false);
+                    setPrescriptionOnly(false);
+                  }}
+                  className="mt-4"
+                >
+                  Clear All Filters
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
