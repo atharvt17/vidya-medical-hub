@@ -167,9 +167,12 @@ const UploadPrescription = () => {
             prescription uploads and any questions.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-green-600 hover:bg-green-700">
-              Contact Pharmacist
-            </Button>
+            <a href="mailto:atharvt815@gmail.com">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                Contact Pharmacist
+              </Button>
+            </a>
+
             <Button size="lg" variant="outline">
               Call: +91 8770042459
             </Button>
