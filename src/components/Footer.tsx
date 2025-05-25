@@ -66,7 +66,7 @@ const Footer = () => {
             <div>
               <h4 className="font-semibold mb-4">Contact Info</h4>
               <div className="space-y-2 text-sm text-gray-300">
-                <p>📞 +91 98765 43210</p>
+                <p>📞 +91 8770042459</p>
                 <p>📧 care@vidyamedical.com</p>
                 <p>📍 Vidya Medical Store, Near Mahamaya Chowk, Rajnandgaon 491441</p>
               </div>
