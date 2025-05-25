@@ -1,48 +1,49 @@
-
 import { Link } from "react-router-dom";
 import { ArrowRight, Star, Users, Award, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
 const Index = () => {
-  const categories = [
-    {
-      name: "Prescription Medicines",
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=200&fit=crop",
-      description: "Doctor prescribed medications",
-      link: "/products?category=prescription"
-    },
-    {
-      name: "Health Supplements",
-      image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=200&fit=crop",
-      description: "Vitamins & nutritional supplements",
-      link: "/products?category=supplements"
-    },
-    {
-      name: "Personal Care",
-      image: "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=300&h=200&fit=crop",
-      description: "Daily care essentials",
-      link: "/products?category=personal-care"
-    },
-    {
-      name: "Baby Care",
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=200&fit=crop",
-      description: "Safe products for babies",
-      link: "/products?category=baby-care"
-    }
-  ];
-
-  const stats = [
-    { icon: Users, number: "50,000+", label: "Happy Customers" },
-    { icon: Award, number: "15+", label: "Years Experience" },
-    { icon: Zap, number: "24/7", label: "Customer Support" },
-    { icon: Star, number: "4.8", label: "Customer Rating" }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  const categories = [{
+    name: "Prescription Medicines",
+    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=200&fit=crop",
+    description: "Doctor prescribed medications",
+    link: "/products?category=prescription"
+  }, {
+    name: "Health Supplements",
+    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=200&fit=crop",
+    description: "Vitamins & nutritional supplements",
+    link: "/products?category=supplements"
+  }, {
+    name: "Personal Care",
+    image: "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=300&h=200&fit=crop",
+    description: "Daily care essentials",
+    link: "/products?category=personal-care"
+  }, {
+    name: "Baby Care",
+    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=200&fit=crop",
+    description: "Safe products for babies",
+    link: "/products?category=baby-care"
+  }];
+  const stats = [{
+    icon: Users,
+    number: "50,000+",
+    label: "Happy Customers"
+  }, {
+    icon: Award,
+    number: "15+",
+    label: "Years Experience"
+  }, {
+    icon: Zap,
+    number: "24/7",
+    label: "Customer Support"
+  }, {
+    icon: Star,
+    number: "4.8",
+    label: "Customer Rating"
+  }];
+  return <div className="min-h-screen bg-gray-50">
       <Header />
       
       {/* Hero Section */}
@@ -70,11 +71,7 @@ const Index = () => {
               </div>
             </div>
             <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1576671081837-49000212a370?w=600&h=400&fit=crop"
-                alt="Healthcare"
-                className="rounded-lg shadow-2xl"
-              />
+              <img src="https://images.unsplash.com/photo-1576671081837-49000212a370?w=600&h=400&fit=crop" alt="Healthcare" className="rounded-lg shadow-2xl" />
             </div>
           </div>
         </div>
@@ -84,13 +81,11 @@ const Index = () => {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
+            {stats.map((stat, index) => <div key={index} className="text-center">
                 <stat.icon className="h-8 w-8 mx-auto mb-4 text-blue-600" />
                 <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
                 <div className="text-gray-600">{stat.label}</div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -103,15 +98,10 @@ const Index = () => {
             <p className="text-xl text-gray-600">Find what you need for your health and wellness</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
-              <Link key={index} to={category.link}>
+            {categories.map((category, index) => <Link key={index} to={category.link}>
                 <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <CardContent className="p-0">
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
+                    <img src={category.image} alt={category.name} className="w-full h-48 object-cover rounded-t-lg" />
                     <div className="p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                         {category.name}
@@ -120,8 +110,7 @@ const Index = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
+              </Link>)}
           </div>
         </div>
       </section>
@@ -139,16 +128,12 @@ const Index = () => {
             <Button size="lg" className="bg-green-600 hover:bg-green-700">
               Consult Pharmacist
             </Button>
-            <Button size="lg" variant="outline">
-              Call: +91 98765 43210
-            </Button>
+            <Button size="lg" variant="outline">Call: +91 8770042459</Button>
           </div>
         </div>
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
