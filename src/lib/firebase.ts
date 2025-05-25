@@ -3,13 +3,13 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBO_wA3B0SIOSYI_708YXof-VCQgZftX1k",
-    authDomain: "vidya-medical-store.firebaseapp.com",
-    projectId: "vidya-medical-store",
-    storageBucket: "vidya-medical-store.firebasestorage.app",
-    messagingSenderId: "233743943436",
-    appId: "1:233743943436:web:ffd1c4ee3e64b9ea1d6b29",
-    measurementId: "G-828B9JM6R2"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
   };
 
 const app = initializeApp(firebaseConfig)
