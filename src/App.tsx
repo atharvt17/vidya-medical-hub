@@ -1,10 +1,11 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
+import { useAuth } from "@/lib/AuthProvider";
+
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
@@ -13,7 +14,26 @@ import Checkout from "./pages/Checkout";
 import UploadPrescription from "./pages/UploadPrescription";
 import NotFound from "./pages/NotFound";
 
+// Optional: You can also add Login and Signup pages here
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+
 const queryClient = new QueryClient();
+
+function ProtectedRoute({ children }: { children: JSX.Element }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    // Don't redirect yet; wait until Firebase finishes checking auth state
+    return <div className="text-center py-10 text-gray-500">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -27,8 +47,24 @@ const App = () => (
             <Route path="/products" element={<Products />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/upload-prescription" element={<UploadPrescription />} />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/upload-prescription"
+              element={
+                <ProtectedRoute>
+                  <UploadPrescription />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

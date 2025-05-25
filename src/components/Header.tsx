@@ -1,14 +1,25 @@
-
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, ShoppingCart, Heart } from "lucide-react";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/lib/AuthProvider"; // Your Firebase auth hook
 
 const Header = () => {
   const { getCartItemsCount } = useCart();
   const cartCount = getCartItemsCount();
+
+  const { user, signOut } = useAuth(); // user and signOut from Firebase auth context
+  const navigate = useNavigate();
+
+  const handleSignIn = () => {
+    navigate("/login"); // navigate to your Firebase login page
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/"); // redirect to homepage after sign out
+  };
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -39,48 +50,59 @@ const Header = () => {
 
           {/* Navigation Icons */}
           <div className="flex items-center space-x-6">
-            <SignedIn>
-              <Button variant="ghost" size="sm" className="hidden md:flex">
-                <Heart className="h-5 w-5 mr-2" />
-                Wishlist
+            {user ? (
+              <>
+                <Button variant="ghost" size="sm" className="hidden md:flex">
+                  <Heart className="h-5 w-5 mr-2" />
+                  Wishlist
+                </Button>
+                <Link to="/cart">
+                  <Button variant="ghost" size="sm" className="relative">
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    Cart
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button variant="ghost" size="sm" onClick={handleSignIn}>
+                Sign In
               </Button>
-              <Link to="/cart">
-                <Button variant="ghost" size="sm" className="relative">
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  Cart
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {cartCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-            </SignedIn>
-            <SignedOut>
-              <SignInButton>
-                <Button variant="ghost" size="sm">
-                  Sign In
-                </Button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+            )}
           </div>
         </div>
 
         {/* Navigation Menu */}
         <nav className="hidden md:flex items-center space-x-12 py-3 border-t">
-          <Link to="/products" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+          <Link
+            to="/products"
+            className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+          >
             All Products
           </Link>
-          <Link to="/upload-prescription" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+          <Link
+            to="/upload-prescription"
+            className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+          >
             Prescription
           </Link>
-          <Link to="/products?category=supplements" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+          <Link
+            to="/products?category=supplements"
+            className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+          >
             Supplements
           </Link>
-          <Link to="/products?category=personal-care" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+          <Link
+            to="/products?category=personal-care"
+            className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+          >
             Personal Care
           </Link>
         </nav>

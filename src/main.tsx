@@ -1,19 +1,15 @@
-
-import { createRoot } from 'react-dom/client'
-import { ClerkProvider } from '@clerk/clerk-react'
-import App from './App.tsx'
-import './index.css'
-
-const PUBLISHABLE_KEY = "pk_test_aWRlYWwtZmxvdW5kZXItNzcuY2xlcmsuYWNjb3VudHMuZGV2JA";
-
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Clerk Publishable Key");
-}
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+import { AuthProvider } from "./lib/AuthProvider.tsx"
 
 const root = createRoot(document.getElementById("root")!);
 
 root.render(
-  <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-    <App />
-  </ClerkProvider>
+  <React.StrictMode>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </React.StrictMode>
 );
