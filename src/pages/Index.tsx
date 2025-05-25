@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+
 const Index = () => {
   const categories = [{
     name: "Prescription Medicines",
@@ -43,7 +44,8 @@ const Index = () => {
     number: "4.8",
     label: "Customer Rating"
   }];
-  return <div className="min-h-screen bg-gray-50">
+  return (
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
       {/* Hero Section */}
@@ -98,19 +100,25 @@ const Index = () => {
             <p className="text-xl text-gray-600">Find what you need for your health and wellness</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => <Link key={index} to={category.link}>
-                <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-0">
-                    <img src={category.image} alt={category.name} className="w-full h-48 object-cover rounded-t-lg" />
-                    <div className="p-6">
+            {categories.map((category, index) => (
+              <Link key={index} to={category.link}>
+                <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
+                  <CardContent className="p-0 flex flex-col h-full">
+                    <img 
+                      src={category.image} 
+                      alt={category.name} 
+                      className="w-full h-48 object-cover rounded-t-lg" 
+                    />
+                    <div className="p-6 flex-1 flex flex-col">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                         {category.name}
                       </h3>
-                      <p className="text-gray-600 text-sm">{category.description}</p>
+                      <p className="text-gray-600 text-sm flex-1">{category.description}</p>
                     </div>
                   </CardContent>
                 </Card>
-              </Link>)}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -134,6 +142,8 @@ const Index = () => {
       </section>
 
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
