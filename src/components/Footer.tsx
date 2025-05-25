@@ -1,9 +1,6 @@
-
 import { Heart, Shield, Truck, Clock } from "lucide-react";
-
 const Footer = () => {
-  return (
-    <footer className="bg-gray-900 text-white">
+  return <footer className="bg-gray-900 text-white">
       {/* Trust Indicators */}
       <div className="bg-gray-800 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,7 +68,7 @@ const Footer = () => {
               <div className="space-y-2 text-sm text-gray-300">
                 <p>📞 +91 98765 43210</p>
                 <p>📧 care@vidyamedical.com</p>
-                <p>📍 123 Health Street, Medical District, Mumbai 400001</p>
+                <p>📍 Vidya Medical Store, Near Mahamaya Chowk, Rajnandgaon 491441</p>
               </div>
             </div>
           </div>
@@ -85,8 +82,6 @@ const Footer = () => {
           </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
