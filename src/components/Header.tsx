@@ -1,10 +1,15 @@
 
 import { Link } from "react-router-dom";
-import { Search, ShoppingCart, Heart, User } from "lucide-react";
+import { Search, ShoppingCart, Heart } from "lucide-react";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCart } from "@/contexts/CartContext";
 
 const Header = () => {
+  const { getCartItemsCount } = useCart();
+  const cartCount = getCartItemsCount();
+
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,7 +38,7 @@ const Header = () => {
           </div>
 
           {/* Navigation Icons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             <Button variant="ghost" size="sm" className="hidden md:flex">
               <Heart className="h-5 w-5 mr-2" />
               Wishlist
@@ -42,15 +47,23 @@ const Header = () => {
               <Button variant="ghost" size="sm" className="relative">
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 Cart
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  0
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
               </Button>
             </Link>
-            <Button variant="ghost" size="sm">
-              <User className="h-5 w-5 mr-2" />
-              Account
-            </Button>
+            <SignedOut>
+              <SignInButton>
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </div>
 
@@ -60,7 +73,7 @@ const Header = () => {
             All Products
           </Link>
           <Link to="/upload-prescription" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-            Upload Prescription
+            Prescription
           </Link>
           <Link to="/products?category=supplements" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
             Supplements

@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,52 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useCart } from "@/contexts/CartContext";
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Paracetamol 500mg",
-      price: 25.50,
-      quantity: 2,
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop",
-      brand: "Cipla",
-      prescription: true
-    },
-    {
-      id: 2,
-      name: "Vitamin D3 Tablets",
-      price: 180.00,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop",
-      brand: "HealthKart",
-      prescription: false
-    },
-    {
-      id: 3,
-      name: "Hand Sanitizer 100ml",
-      price: 45.00,
-      quantity: 3,
-      image: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=200&h=200&fit=crop",
-      brand: "Dettol",
-      prescription: false
-    }
-  ]);
+  const { cartItems, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();
 
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-  };
-
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = getCartTotal();
   const deliveryFee = subtotal > 500 ? 0 : 50;
   const total = subtotal + deliveryFee;
 
@@ -107,9 +66,11 @@ const Cart = () => {
                   You have {prescriptionItems.length} prescription item(s) in your cart. 
                   Please upload valid prescriptions before checkout.
                 </p>
-                <Button variant="outline" size="sm">
-                  Upload Prescription
-                </Button>
+                <Link to="/upload-prescription">
+                  <Button variant="outline" size="sm">
+                    Upload Prescription
+                  </Button>
+                </Link>
               </div>
             )}
 
@@ -138,7 +99,7 @@ const Cart = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeFromCart(item.id)}
                             className="text-red-600 hover:text-red-700"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -181,7 +142,7 @@ const Cart = () => {
               <Link to="/products">
                 <Button variant="outline">Continue Shopping</Button>
               </Link>
-              <Button variant="outline" onClick={() => setCartItems([])}>
+              <Button variant="outline" onClick={clearCart}>
                 Clear Cart
               </Button>
             </div>
