@@ -1,71 +1,69 @@
+
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { Star, Heart, Truck, Shield, Clock, Plus, Minus } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCart } from "@/contexts/CartContext";
-import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthProvider";
+
+// Mock product data - in a real app, this would come from an API
+const productData = {
+  1: {
+    id: 1,
+    name: "Paracetamol 500mg Tablets",
+    price: 45,
+    originalPrice: 60,
+    brand: "Apollo Pharmacy",
+    rating: 4.5,
+    reviews: 128,
+    inStock: true,
+    prescription: false,
+    images: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
+    description: "Paracetamol is a common painkiller used to treat aches and pain. It can also be used to reduce a high temperature.",
+    ingredients: ["Paracetamol 500mg"],
+    dosage: "Adults and children aged 16 years and over: 1-2 tablets every 4-6 hours as required. Do not take more than 8 tablets in 24 hours.",
+    warnings: "Do not exceed the stated dose. Keep out of reach of children.",
+    category: "Pain Relief"
+  }
+};
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(0);
 
-  // Mock product data
-  const product = {
-    id: 1,
-    name: "Paracetamol 500mg Tablets",
-    price: 25.5,
-    originalPrice: 30.0,
-    rating: 4.5,
-    reviews: 234,
-    category: "prescription",
-    brand: "Cipla",
-    images: [
-      "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&h=500&fit=crop",
-      "https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=500&h=500&fit=crop",
-      "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=500&h=500&fit=crop",
-    ],
-    inStock: true,
-    stockCount: 156,
-    prescription: true,
-    description:
-      "Paracetamol is a pain reliever and a fever reducer. It is used to treat many conditions such as headache, muscle aches, arthritis, backache, toothaches, colds, and fevers.",
-    dosage:
-      "Adults and children over 12 years: 1-2 tablets every 4-6 hours as needed. Do not exceed 8 tablets in 24 hours.",
-    ingredients: "Each tablet contains: Paracetamol 500mg",
-    warnings:
-      "Do not exceed the recommended dose. Consult your doctor if symptoms persist.",
-    manufacturer: "Cipla Ltd.",
-    expiryDate: "12/2025",
-  };
+  const product = productData[id as keyof typeof productData];
 
-  const features = [
-    {
-      icon: Truck,
-      title: "Fast Delivery",
-      description: "Same day delivery available",
-    },
-    {
-      icon: Shield,
-      title: "Authentic Product",
-      description: "100% genuine medicines",
-    },
-    {
-      icon: Clock,
-      title: "24/7 Support",
-      description: "Expert pharmacist available",
-    },
-  ];
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Product not found</h1>
+          <Button onClick={() => navigate("/products")} className="mt-4">
+            Back to Products
+          </Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleAddToCart = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: product.id,
@@ -80,351 +78,174 @@ const ProductDetails = () => {
   };
 
   const handleAddToWishlist = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    
     toast.success(`${product.name} added to wishlist!`);
-  };
-
-  const handleUnauthenticatedAction = () => {
-    // Redirect to your Firebase sign-in page or open modal
-    navigate("/login");
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <nav className="mb-6">
-          <ol className="flex items-center space-x-2 text-sm text-gray-500">
-            <li>
-              <Link to="/" className="hover:text-blue-600">
-                Home
-              </Link>
-            </li>
-            <li>/</li>
-            <li>
-              <Link to="/products" className="hover:text-blue-600">
-                Products
-              </Link>
-            </li>
-            <li>/</li>
-            <li className="text-gray-900">{product.name}</li>
-          </ol>
+        <nav className="text-sm text-gray-600 mb-8">
+          <span>Home</span> / <span>Products</span> / <span>{product.category}</span> / <span className="text-gray-900">{product.name}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
-          <div className="space-y-4">
-            <div className="aspect-square">
+          <div>
+            <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100">
               <img
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover"
               />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="flex space-x-2">
               {product.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 ${
-                    selectedImage === index
-                      ? "border-blue-500"
-                      : "border-gray-200"
+                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                    selectedImage === index ? "border-blue-500" : "border-gray-200"
                   }`}
                 >
-                  <img
-                    src={image}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={image} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm text-gray-500">{product.brand}</span>
-                {product.prescription && (
-                  <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
-                    Prescription Required
-                  </span>
-                )}
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                {product.name}
-              </h1>
-
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.floor(product.rating)
-                          ? "text-yellow-400 fill-current"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                  <span className="ml-2 text-sm text-gray-600">
-                    {product.rating} ({product.reviews} reviews)
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-3xl font-bold text-gray-900">
-                  ₹{product.price}
-                </span>
-                {product.originalPrice > product.price && (
-                  <span className="text-xl text-gray-500 line-through">
-                    ₹{product.originalPrice}
-                  </span>
-                )}
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                  {Math.round(
-                    ((product.originalPrice - product.price) /
-                      product.originalPrice) *
-                      100
-                  )}
-                  % OFF
-                </span>
-              </div>
-
-              <p className="text-gray-600 mb-6">{product.description}</p>
+          <div>
+            <div className="flex items-center space-x-2 mb-2">
+              <span className="text-sm text-gray-600">{product.brand}</span>
+              {product.prescription && (
+                <Badge variant="secondary">Prescription Required</Badge>
+              )}
             </div>
 
-            {/* Quantity and Add to Cart */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <span className="font-semibold">Quantity:</span>
-                <div className="flex items-center border rounded-lg">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="px-4 py-2 font-semibold">{quantity}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setQuantity(quantity + 1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <span className="text-sm text-gray-500">
-                  {product.stockCount} items available
-                </span>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="flex items-center space-x-1">
+                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                <span className="font-semibold">{product.rating}</span>
+                <span className="text-gray-600">({product.reviews} reviews)</span>
               </div>
+              <span className={`px-2 py-1 rounded text-sm ${product.inStock ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                {product.inStock ? "In Stock" : "Out of Stock"}
+              </span>
+            </div>
 
-              {user ? (
-                <div className="flex gap-4">
-                  <Button
-                    size="lg"
-                    className="flex-1"
-                    onClick={handleAddToCart}
-                  >
-                    Add to Cart
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={handleAddToWishlist}
-                  >
-                    <Heart className="h-5 w-5" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-4">
-                  <Button
-                    size="lg"
-                    className="flex-1"
-                    onClick={handleUnauthenticatedAction}
-                  >
-                    Add to Cart
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={handleUnauthenticatedAction}
-                  >
-                    <Heart className="h-5 w-5" />
-                  </Button>
-                </div>
+            <div className="flex items-center space-x-3 mb-6">
+              <span className="text-3xl font-bold text-gray-900">₹{product.price}</span>
+              {product.originalPrice && (
+                <span className="text-xl text-gray-500 line-through">₹{product.originalPrice}</span>
               )}
+              {product.originalPrice && (
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                </span>
+              )}
+            </div>
 
-              {product.prescription && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <p className="text-sm text-yellow-800">
-                    <strong>Prescription Required:</strong> Please upload a
-                    valid prescription before checkout.
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-2">
-                    Upload Prescription
-                  </Button>
-                </div>
-              )}
+            {/* Quantity Selector */}
+            <div className="flex items-center space-x-4 mb-6">
+              <span className="font-medium">Quantity:</span>
+              <div className="flex items-center border rounded-lg">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={quantity <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="px-4 py-2 font-medium">{quantity}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setQuantity(quantity + 1)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-4 mb-8">
+              <Button
+                onClick={handleAddToCart}
+                disabled={!product.inStock}
+                className="flex-1"
+                size="lg"
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Add to Cart
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleAddToWishlist}
+                size="lg"
+              >
+                <Heart className="h-5 w-5" />
+              </Button>
             </div>
 
             {/* Features */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 p-3 bg-white rounded-lg border"
-                >
-                  <feature.icon className="h-8 w-8 text-blue-600" />
-                  <div>
-                    <h4 className="font-semibold text-sm">{feature.title}</h4>
-                    <p className="text-xs text-gray-600">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="text-center">
+                <Truck className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                <p className="text-sm font-medium">Free Delivery</p>
+                <p className="text-xs text-gray-600">On orders above ₹500</p>
+              </div>
+              <div className="text-center">
+                <Shield className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                <p className="text-sm font-medium">Secure Payment</p>
+                <p className="text-xs text-gray-600">100% safe & secure</p>
+              </div>
+              <div className="text-center">
+                <RotateCcw className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                <p className="text-sm font-medium">Easy Returns</p>
+                <p className="text-xs text-gray-600">30 days return policy</p>
+              </div>
+            </div>
+
+            <Separator className="mb-8" />
+
+            {/* Product Details */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Description</h3>
+                <p className="text-gray-600">{product.description}</p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Ingredients</h3>
+                <ul className="list-disc list-inside text-gray-600">
+                  {product.ingredients.map((ingredient, index) => (
+                    <li key={index}>{ingredient}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Dosage</h3>
+                <p className="text-gray-600">{product.dosage}</p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Warnings</h3>
+                <p className="text-gray-600">{product.warnings}</p>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Product Details Tabs */}
-        <div className="mt-12">
-          <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="dosage">Dosage</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews</TabsTrigger>
-              <TabsTrigger value="similar">Similar Products</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="details" className="mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-semibold mb-4">
-                        Product Information
-                      </h3>
-                      <dl className="space-y-2">
-                        <div className="flex justify-between">
-                          <dt className="text-gray-600">Manufacturer:</dt>
-                          <dd className="font-medium">
-                            {product.manufacturer}
-                          </dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-gray-600">Expiry Date:</dt>
-                          <dd className="font-medium">{product.expiryDate}</dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-gray-600">Category:</dt>
-                          <dd className="font-medium capitalize">
-                            {product.category}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-4">Ingredients</h3>
-                      <p className="text-gray-600">{product.ingredients}</p>
-
-                      <h3 className="font-semibold mt-6 mb-4">Warnings</h3>
-                      <p className="text-gray-600">{product.warnings}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="dosage" className="mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-4">Dosage Instructions</h3>
-                  <p className="text-gray-600 mb-4">{product.dosage}</p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
-                      <strong>Important:</strong> Always consult with your
-                      healthcare provider before taking any medication.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="reviews" className="mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">
-                        Customer Reviews ({product.reviews})
-                      </h3>
-                      <Button>Write Review</Button>
-                    </div>
-
-                    <div className="space-y-4">
-                      {[1, 2, 3].map((review) => (
-                        <div key={review} className="border-b pb-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className="h-4 w-4 text-yellow-400 fill-current"
-                                />
-                              ))}
-                            </div>
-                            <span className="font-medium">John Doe</span>
-                            <span className="text-sm text-gray-500">
-                              2 days ago
-                            </span>
-                          </div>
-                          <p className="text-gray-600">
-                            Excellent product, works as expected. Fast delivery
-                            and good packaging.
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="similar" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map((item) => (
-                  <Card
-                    key={item}
-                    className="group hover:shadow-lg transition-all"
-                  >
-                    <CardContent className="p-4">
-                      <img
-                        src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop"
-                        alt="Similar product"
-                        className="w-full h-32 object-cover rounded mb-3"
-                      />
-                      <h4 className="font-medium mb-2">
-                        Similar Medicine {item}
-                      </h4>
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">
-                          ₹{(Math.random() * 100 + 20).toFixed(0)}
-                        </span>
-                        <Button size="sm">Add to Cart</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
         </div>
       </div>
 

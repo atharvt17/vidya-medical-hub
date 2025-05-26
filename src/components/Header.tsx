@@ -1,24 +1,29 @@
+
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, Heart } from "lucide-react";
+import { Search, ShoppingCart, Heart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
-import { useAuth } from "@/lib/AuthProvider"; // Your Firebase auth hook
+import { useAuth } from "@/lib/AuthProvider";
 
 const Header = () => {
   const { getCartItemsCount } = useCart();
   const cartCount = getCartItemsCount();
 
-  const { user, signOut } = useAuth(); // user and signOut from Firebase auth context
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignIn = () => {
-    navigate("/login"); // navigate to your Firebase login page
+    navigate("/login");
   };
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/"); // redirect to homepage after sign out
+    navigate("/");
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
   };
 
   return (
@@ -67,6 +72,10 @@ const Header = () => {
                     )}
                   </Button>
                 </Link>
+                <Button variant="ghost" size="sm" onClick={handleProfileClick}>
+                  <User className="h-5 w-5 mr-2" />
+                  Profile
+                </Button>
                 <Button variant="ghost" size="sm" onClick={handleSignOut}>
                   Sign Out
                 </Button>

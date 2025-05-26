@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,10 +14,11 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import UploadPrescription from "./pages/UploadPrescription";
 import NotFound from "./pages/NotFound";
-
-// Optional: You can also add Login and Signup pages here
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Profile from "./pages/Profile";
+import SavedAddresses from "./pages/SavedAddresses";
+import MyOrders from "./pages/MyOrders";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +26,6 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    // Don't redirect yet; wait until Firebase finishes checking auth state
     return <div className="text-center py-10 text-gray-500">Loading...</div>;
   }
 
@@ -60,6 +61,30 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <UploadPrescription />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/saved-addresses"
+              element={
+                <ProtectedRoute>
+                  <SavedAddresses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-orders"
+              element={
+                <ProtectedRoute>
+                  <MyOrders />
                 </ProtectedRoute>
               }
             />

@@ -1,13 +1,13 @@
+
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Star, Heart } from "lucide-react";
-
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
-import { useAuth } from "@/lib/AuthProvider";  // Your Firebase auth hook
+import { useAuth } from "@/lib/AuthProvider";
 
 interface Product {
   id: number;
@@ -27,10 +27,15 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
-  const { user } = useAuth();  // get Firebase user
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleAddToCart = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    
     addToCart({
       id: product.id,
       name: product.name,
@@ -42,9 +47,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
     toast.success(`${product.name} added to cart!`);
   };
 
-  const handleUnauthenticatedAction = () => {
-    // redirect to your Firebase login page
-    navigate("/login");
+  const handleAddToWishlist = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    
+    toast.success(`${product.name} added to wishlist!`);
   };
 
   return (
@@ -63,11 +72,21 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">{product.brand}</span>
-            {product.prescription && (
-              <Badge variant="secondary" className="text-xs">
-                Rx
-              </Badge>
-            )}
+            <div className="flex items-center space-x-2">
+              {product.prescription && (
+                <Badge variant="secondary" className="text-xs">
+                  Rx
+                </Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={handleAddToWishlist}
+              >
+                <Heart className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           <Link to={`/product/${product.id}`}>
@@ -90,27 +109,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
 
-          {user ? (
-            <Button
-              onClick={handleAddToCart}
-              disabled={!product.inStock}
-              className="w-full mt-3"
-              size="sm"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              {product.inStock ? "Add to Cart" : "Out of Stock"}
-            </Button>
-          ) : (
-            <Button
-              onClick={handleUnauthenticatedAction}
-              disabled={!product.inStock}
-              className="w-full mt-3"
-              size="sm"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              {product.inStock ? "Add to Cart" : "Out of Stock"}
-            </Button>
-          )}
+          <Button
+            onClick={handleAddToCart}
+            disabled={!product.inStock}
+            className="w-full mt-3"
+            size="sm"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            {product.inStock ? "Add to Cart" : "Out of Stock"}
+          </Button>
         </div>
       </CardContent>
     </Card>
