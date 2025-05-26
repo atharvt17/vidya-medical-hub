@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, MapPin, Package, LogOut, Edit, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/lib/AuthProvider";
+import { EditProfileDialog } from "@/components/EditProfileDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -38,6 +42,19 @@ const Profile = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const handleEditProfile = () => {
+    setEditProfileOpen(true);
+  };
+
+  const handleSaveProfile = (data: { displayName: string; phoneNumber: string }) => {
+    // In a real app, you would update the user profile via Firebase
+    console.log('Saving profile data:', data);
+    toast({
+      title: "Profile updated",
+      description: "Your profile has been successfully updated.",
+    });
   };
 
   const getInitials = (name: string) => {
@@ -72,7 +89,7 @@ const Profile = () => {
                   Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}
                 </p>
               </div>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleEditProfile}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Profile
               </Button>
@@ -147,6 +164,13 @@ const Profile = () => {
           </CardContent>
         </Card>
       </div>
+
+      <EditProfileDialog
+        open={editProfileOpen}
+        onOpenChange={setEditProfileOpen}
+        user={user}
+        onSave={handleSaveProfile}
+      />
 
       <Footer />
     </div>

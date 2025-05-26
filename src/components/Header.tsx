@@ -1,5 +1,5 @@
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, ShoppingCart, Heart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/AuthProvider";
 const Header = () => {
   const { getCartItemsCount } = useCart();
   const cartCount = getCartItemsCount();
+  const location = useLocation();
 
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -25,6 +26,9 @@ const Header = () => {
   const handleProfileClick = () => {
     navigate("/profile");
   };
+
+  // Don't show sign out button on home page
+  const isHomePage = location.pathname === '/';
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -76,9 +80,11 @@ const Header = () => {
                   <User className="h-5 w-5 mr-2" />
                   Profile
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
+                {!isHomePage && (
+                  <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                    Sign Out
+                  </Button>
+                )}
               </>
             ) : (
               <Button variant="ghost" size="sm" onClick={handleSignIn}>

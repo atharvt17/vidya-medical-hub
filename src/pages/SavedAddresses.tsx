@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/lib/AuthProvider";
+import { AddressDialog } from "@/components/AddressDialog";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface Address {
   id: string;
@@ -24,6 +27,8 @@ interface Address {
 const SavedAddresses = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const [addresses, setAddresses] = useState<Address[]>([
     {
       id: '1',
@@ -48,6 +53,11 @@ const SavedAddresses = () => {
       isDefault: false
     }
   ]);
+
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | undefined>();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -82,8 +92,57 @@ const SavedAddresses = () => {
     }
   };
 
+  const handleAddAddress = () => {
+    setEditingAddress(undefined);
+    setAddressDialogOpen(true);
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address);
+    setAddressDialogOpen(true);
+  };
+
   const handleDeleteAddress = (id: string) => {
-    setAddresses(addresses.filter(addr => addr.id !== id));
+    setAddressToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteAddress = () => {
+    if (addressToDelete) {
+      setAddresses(addresses.filter(addr => addr.id !== addressToDelete));
+      toast({
+        title: "Address deleted",
+        description: "Address has been successfully removed.",
+      });
+    }
+    setDeleteDialogOpen(false);
+    setAddressToDelete(null);
+  };
+
+  const handleSaveAddress = (addressData: Omit<Address, 'id'>) => {
+    if (editingAddress) {
+      // Edit existing address
+      setAddresses(addresses.map(addr => 
+        addr.id === editingAddress.id 
+          ? { ...addressData, id: editingAddress.id }
+          : addr
+      ));
+      toast({
+        title: "Address updated",
+        description: "Address has been successfully updated.",
+      });
+    } else {
+      // Add new address
+      const newAddress: Address = {
+        ...addressData,
+        id: Date.now().toString(),
+      };
+      setAddresses([...addresses, newAddress]);
+      toast({
+        title: "Address added",
+        description: "New address has been successfully added.",
+      });
+    }
   };
 
   const handleSetDefault = (id: string) => {
@@ -91,6 +150,10 @@ const SavedAddresses = () => {
       ...addr,
       isDefault: addr.id === id
     })));
+    toast({
+      title: "Default address updated",
+      description: "Default address has been changed.",
+    });
   };
 
   return (
@@ -110,7 +173,7 @@ const SavedAddresses = () => {
               <p className="text-gray-600">Manage your delivery addresses</p>
             </div>
           </div>
-          <Button>
+          <Button onClick={handleAddAddress}>
             <Plus className="h-4 w-4 mr-2" />
             Add New Address
           </Button>
@@ -142,7 +205,11 @@ const SavedAddresses = () => {
                   </div>
                   
                   <div className="flex flex-col space-y-2 ml-4">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditAddress(address)}
+                    >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </Button>
@@ -176,7 +243,7 @@ const SavedAddresses = () => {
               <MapPin className="h-16 w-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No addresses saved</h3>
               <p className="text-gray-600 mb-6">Add your first address to get started with deliveries</p>
-              <Button>
+              <Button onClick={handleAddAddress}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First Address
               </Button>
@@ -184,6 +251,21 @@ const SavedAddresses = () => {
           </Card>
         )}
       </div>
+
+      <AddressDialog
+        open={addressDialogOpen}
+        onOpenChange={setAddressDialogOpen}
+        onSave={handleSaveAddress}
+        address={editingAddress}
+      />
+
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDeleteAddress}
+        title="Delete Address"
+        description="Are you sure you want to delete this address? This action cannot be undone."
+      />
 
       <Footer />
     </div>
