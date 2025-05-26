@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -14,7 +13,7 @@ import { useAuth } from "@/lib/AuthProvider";
 
 // Mock product data - in a real app, this would come from an API
 const productData = {
-  1: {
+  "1": {
     id: 1,
     name: "Paracetamol 500mg Tablets",
     price: 45,
@@ -41,7 +40,7 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  const product = productData[id as keyof typeof productData];
+  const product = id ? productData[id as keyof typeof productData] : undefined;
 
   if (!product) {
     return (
