@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, MapPin, Package, LogOut, Edit, ChevronRight, Server } from "lucide-react";
+import { User, MapPin, Package, LogOut, Edit, ChevronRight, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,7 +12,7 @@ import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
-  const { user, loading, signOut, djangoUser } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -57,6 +57,15 @@ const Profile = () => {
     });
   };
 
+  const handleSendVerification = () => {
+    // Dummy function for now - user will provide the actual implementation
+    console.log('Sending verification email...');
+    toast({
+      title: "Verification email sent",
+      description: "Please check your email for the verification link.",
+    });
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -88,12 +97,6 @@ const Profile = () => {
                 <p className="text-sm text-gray-500 mt-1">
                   Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}
                 </p>
-                {djangoUser && (
-                  <div className="flex items-center mt-2">
-                    <Server className="h-4 w-4 text-green-600 mr-1" />
-                    <span className="text-sm text-green-600">Connected to Django backend</span>
-                  </div>
-                )}
               </div>
               <Button variant="outline" onClick={handleEditProfile}>
                 <Edit className="h-4 w-4 mr-2" />
@@ -102,38 +105,6 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Django User Info */}
-        {djangoUser && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Server className="h-5 w-5 mr-2" />
-                Django Backend Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Backend User ID</label>
-                  <p className="mt-1 text-gray-900">{djangoUser.user?.id || 'N/A'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Backend Email</label>
-                  <p className="mt-1 text-gray-900">{djangoUser.user?.email || 'N/A'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">First Name</label>
-                  <p className="mt-1 text-gray-900">{djangoUser.user?.first_name || 'N/A'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Last Name</label>
-                  <p className="mt-1 text-gray-900">{djangoUser.user?.last_name || 'N/A'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -172,12 +143,12 @@ const Profile = () => {
         {/* Account Details */}
         <Card>
           <CardHeader>
-            <CardTitle>Firebase Account Details</CardTitle>
+            <CardTitle>Account Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700">Display Name</label>
+                <label className="text-sm font-medium text-gray-700">Name</label>
                 <p className="mt-1 text-gray-900">{displayName}</p>
               </div>
               <div>
@@ -190,13 +161,24 @@ const Profile = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">Email Verified</label>
-                <p className="mt-1">
+                <div className="mt-1 flex items-center gap-3">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     user.emailVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                   }`}>
                     {user.emailVerified ? 'Verified' : 'Not Verified'}
                   </span>
-                </p>
+                  {!user.emailVerified && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleSendVerification}
+                      className="text-xs"
+                    >
+                      <Mail className="h-3 w-3 mr-1" />
+                      Send Verification
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>

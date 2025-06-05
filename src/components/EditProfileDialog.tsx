@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -27,15 +28,26 @@ interface EditProfileDialogProps {
 }
 
 export const EditProfileDialog = ({ open, onOpenChange, user, onSave }: EditProfileDialogProps) => {
+  // Extract phone number without +91 prefix for editing
+  const getPhoneWithoutPrefix = (phone: string | null) => {
+    if (!phone) return '';
+    return phone.startsWith('+91') ? phone.slice(3) : phone;
+  };
+
   const form = useForm({
     defaultValues: {
       displayName: user.displayName || '',
-      phoneNumber: user.phoneNumber || '',
+      phoneNumber: getPhoneWithoutPrefix(user.phoneNumber),
     }
   });
 
   const onSubmit = (data: any) => {
-    onSave(data);
+    // Add +91 prefix to phone number before saving
+    const formattedData = {
+      ...data,
+      phoneNumber: data.phoneNumber ? `+91${data.phoneNumber}` : ''
+    };
+    onSave(formattedData);
     onOpenChange(false);
   };
 
@@ -44,6 +56,9 @@ export const EditProfileDialog = ({ open, onOpenChange, user, onSave }: EditProf
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
+          <DialogDescription>
+            Update your profile information here.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -68,7 +83,17 @@ export const EditProfileDialog = ({ open, onOpenChange, user, onSave }: EditProf
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="+91 9876543210" />
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
+                        +91
+                      </span>
+                      <Input 
+                        {...field} 
+                        placeholder="9876543210"
+                        className="rounded-l-none"
+                        maxLength={10}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
