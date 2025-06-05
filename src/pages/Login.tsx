@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, Heart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -8,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/lib/AuthProvider';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +20,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { djangoUser } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,12 +35,20 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      toast({
-        title: "Success!",
-        description: "Welcome back to Vidya Medical",
-      });
-      navigate('/');
+      // Sign in with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      console.log('Firebase authentication successful:', userCredential.user.email);
+      
+      // The AuthProvider will automatically handle Django authentication
+      // Wait a moment for the Django sync to complete
+      setTimeout(() => {
+        toast({
+          title: "Success!",
+          description: "Welcome back to Vidya Medical",
+        });
+        navigate('/');
+      }, 1000);
+      
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -49,6 +60,13 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+
+  // Show Django user info in console for debugging
+  React.useEffect(() => {
+    if (djangoUser) {
+      console.log('Django user authenticated:', djangoUser);
+    }
+  }, [djangoUser]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -141,6 +159,13 @@ const Login = () => {
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
+
+            {/* Django Integration Status (for debugging) */}
+            {djangoUser && (
+              <div className="text-xs text-green-600 text-center bg-green-50 p-2 rounded">
+                ✓ Connected to Django backend
+              </div>
+            )}
 
             {/* Divider */}
             <div className="relative">

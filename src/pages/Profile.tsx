@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, MapPin, Package, LogOut, Edit, ChevronRight } from "lucide-react";
+import { User, MapPin, Package, LogOut, Edit, ChevronRight, Server } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,7 +12,7 @@ import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, djangoUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -88,6 +88,12 @@ const Profile = () => {
                 <p className="text-sm text-gray-500 mt-1">
                   Member since {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}
                 </p>
+                {djangoUser && (
+                  <div className="flex items-center mt-2">
+                    <Server className="h-4 w-4 text-green-600 mr-1" />
+                    <span className="text-sm text-green-600">Connected to Django backend</span>
+                  </div>
+                )}
               </div>
               <Button variant="outline" onClick={handleEditProfile}>
                 <Edit className="h-4 w-4 mr-2" />
@@ -96,6 +102,38 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Django User Info */}
+        {djangoUser && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Server className="h-5 w-5 mr-2" />
+                Django Backend Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Backend User ID</label>
+                  <p className="mt-1 text-gray-900">{djangoUser.user?.id || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Backend Email</label>
+                  <p className="mt-1 text-gray-900">{djangoUser.user?.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">First Name</label>
+                  <p className="mt-1 text-gray-900">{djangoUser.user?.first_name || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Last Name</label>
+                  <p className="mt-1 text-gray-900">{djangoUser.user?.last_name || 'N/A'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -134,7 +172,7 @@ const Profile = () => {
         {/* Account Details */}
         <Card>
           <CardHeader>
-            <CardTitle>Account Details</CardTitle>
+            <CardTitle>Firebase Account Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
