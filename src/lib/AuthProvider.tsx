@@ -35,10 +35,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!firebaseUser.displayName) {
           console.log('No display name found, waiting for profile update...');
           setTimeout(async () => {
-            // Reload user to get updated profile
+            // Reload user to get updated profile and use the refreshed user from auth.currentUser
             await firebaseUser.reload();
-            const djangoResponse = await authenticateWithDjango(firebaseUser);
-            setDjangoUser(djangoResponse);
+            const refreshedUser = auth.currentUser;
+            if (refreshedUser) {
+              const djangoResponse = await authenticateWithDjango(refreshedUser);
+              setDjangoUser(djangoResponse);
+            }
           }, 1000);
         } else {
           // User has display name, proceed immediately

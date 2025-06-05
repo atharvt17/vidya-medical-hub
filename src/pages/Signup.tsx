@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Heart, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -73,7 +74,11 @@ const Signup = () => {
         displayName: `${formData.firstName} ${formData.lastName}`
       });
 
+      // Reload the user to ensure the latest profile is fetched
+      await userCredential.user.reload();
+      const refreshedUser = auth.currentUser;
       console.log('User created and profile updated successfully');
+      console.log('Refreshed user displayName:', refreshedUser?.displayName);
 
       toast({
         title: "Account Created!",
