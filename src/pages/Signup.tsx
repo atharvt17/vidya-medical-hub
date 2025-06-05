@@ -73,6 +73,8 @@ const Signup = () => {
         displayName: `${formData.firstName} ${formData.lastName}`
       });
 
+      console.log('User created and profile updated successfully');
+
       toast({
         title: "Account Created!",
         description: "Welcome to Vidya Medical Store!",

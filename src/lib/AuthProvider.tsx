@@ -30,9 +30,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (firebaseUser) {
         console.log('Firebase user authenticated, syncing with Django...');
-        // Authenticate with Django backend when Firebase user changes
-        const djangoResponse = await authenticateWithDjango(firebaseUser);
-        setDjangoUser(djangoResponse);
+        
+        // Wait a bit if this is a new user without displayName to allow updateProfile to complete
+        if (!firebaseUser.displayName) {
+          console.log('No display name found, waiting for profile update...');
+          setTimeout(async () => {
+            // Reload user to get updated profile
+            await firebaseUser.reload();
+            const djangoResponse = await authenticateWithDjango(firebaseUser);
+            setDjangoUser(djangoResponse);
+          }, 1000);
+        } else {
+          // User has display name, proceed immediately
+          const djangoResponse = await authenticateWithDjango(firebaseUser);
+          setDjangoUser(djangoResponse);
+        }
       } else {
         setDjangoUser(null);
       }
