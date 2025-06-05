@@ -14,10 +14,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { Home, Building, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
+
 
 interface Address {
   id: string;
@@ -38,52 +46,60 @@ interface AddressDialogProps {
   address?: Address;
 }
 
+const CITY_OPTIONS = [
+  { city: 'Bhilai', pincode: '490001' },
+  { city: 'Durg', pincode: '491001' },
+  { city: 'Raipur', pincode: '492001' },
+  { city: 'Rajnandgaon', pincode: '491441' },
+];
+
 export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDialogProps) => {
   const { user } = useAuth();
-  
-  // Extract phone number without +91 prefix for editing
-  const getPhoneWithoutPrefix = (phone: string) => {
-    if (!phone) return '';
-    return phone.startsWith('+91') ? phone.slice(3) : phone;
-  };
-
   const form = useForm({
     defaultValues: {
       type: address?.type || 'home',
       name: address?.name || '',
-      phone: getPhoneWithoutPrefix(address?.phone || ''),
+      phone: address?.phone ? address.phone.replace('+91', '') : '',
       address: address?.address || '',
       city: address?.city || '',
-      state: address?.state || '',
+      state: 'Chhattisgarh',
       pincode: address?.pincode || '',
       isDefault: address?.isDefault || false,
     }
   });
 
   const onSubmit = (data: any) => {
-    // Add +91 prefix to phone number before saving
-    const formattedData = {
+    const phoneWithCountryCode = `+91${data.phone}`;
+    const addressData = {
       ...data,
-      phone: data.phone ? `+91${data.phone}` : ''
+      phone: phoneWithCountryCode
     };
-
-    // Log in the requested format
-    const logData = {
+    
+    // Log in the specified format
+    console.log({
       firebase_uid: user?.uid || '',
-      Phone_Number: `+91${data.phone}`,
+      type:data.type,
+      Phone_Number: phoneWithCountryCode,
       address: {
         street: data.address,
         city: data.city,
         state: data.state,
         zip: data.pincode,
-        country: "USA"
+        country: "India"
       }
-    };
-    console.log('Address data:', logData);
-
-    onSave(formattedData);
+    });
+    
+    onSave(addressData);
     form.reset();
     onOpenChange(false);
+  };
+
+  const handleCityChange = (selectedCity: string) => {
+    const cityData = CITY_OPTIONS.find(option => option.city === selectedCity);
+    if (cityData) {
+      form.setValue('city', selectedCity);
+      form.setValue('pincode', cityData.pincode);
+    }
   };
 
   return (
@@ -145,12 +161,12 @@ export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDi
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
                       <div className="flex">
-                        <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">
+                        <span className="flex items-center px-3 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md text-gray-700 font-medium">
                           +91
                         </span>
                         <Input 
                           {...field} 
-                          placeholder="9876543210"
+                          placeholder="Enter 10-digit number"
                           className="rounded-l-none"
                           maxLength={10}
                         />
@@ -183,9 +199,20 @@ export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDi
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <Select onValueChange={handleCityChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select city" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CITY_OPTIONS.map((option) => (
+                          <SelectItem key={option.city} value={option.city}>
+                            {option.city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -198,7 +225,7 @@ export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDi
                   <FormItem>
                     <FormLabel>State</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} value="Chhattisgarh" readOnly className="bg-gray-100" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -212,7 +239,7 @@ export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDi
                   <FormItem>
                     <FormLabel>Pincode</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} readOnly className="bg-gray-100" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
