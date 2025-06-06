@@ -83,6 +83,18 @@ export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDi
         pincode: address.zip,
         isDefault: address.is_default,
       });
+    } else if (open) {
+      // Reset form when opening for a new address
+      form.reset({
+        type: 'home',
+        name: '',
+        phone: '',
+        address: '',
+        city: '',
+        state: 'Chhattisgarh',
+        pincode: '',
+        isDefault: false,
+      });
     }
   }, [address, open, form]);
 
@@ -270,7 +282,7 @@ export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDi
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!form.formState.isValid}>
+              <Button type="submit">
                 {address ? 'Update Address' : 'Save Address'}
               </Button>
             </div>

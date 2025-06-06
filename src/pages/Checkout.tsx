@@ -15,11 +15,26 @@ import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { AddressSelector } from "@/components/AddressSelector";
+
+interface Address {
+  _id: string;
+  type: 'home' | 'work' | 'other';
+  name: string;
+  phone: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  is_default: boolean;
+}
 
 const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [deliveryOption, setDeliveryOption] = useState("standard");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const { cartItems, getCartTotal, clearCart } = useCart();
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const navigate = useNavigate();
@@ -41,6 +56,11 @@ const Checkout = () => {
       return;
     }
 
+    if (!selectedAddress) {
+      toast.error("Please select a delivery address");
+      return;
+    }
+
     setIsPlacingOrder(true);
 
     try {
@@ -53,6 +73,7 @@ const Checkout = () => {
         total,
         paymentMethod,
         deliveryOption,
+        deliveryAddress: selectedAddress,
         orderDate: new Date().toISOString(),
         status: "pending",
       };
@@ -150,7 +171,6 @@ const Checkout = () => {
             </Card>
 
             {/* Delivery Address */}
-            {/* ...rest of your form unchanged */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -158,54 +178,8 @@ const Checkout = () => {
                   Delivery Address
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="firstName">First Name *</Label>
-                    <Input id="firstName" placeholder="John" />
-                  </div>
-                  <div>
-                    <Label htmlFor="lastName">Last Name *</Label>
-                    <Input id="lastName" placeholder="Doe" />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="address">Street Address *</Label>
-                  <Input id="address" placeholder="123 Main Street, Apartment 4B" />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">City *</Label>
-                    <Input id="city" placeholder="Mumbai" />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State *</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select state" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="maharashtra">Maharashtra</SelectItem>
-                        <SelectItem value="delhi">Delhi</SelectItem>
-                        <SelectItem value="karnataka">Karnataka</SelectItem>
-                        <SelectItem value="gujarat">Gujarat</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="pincode">Pincode *</Label>
-                    <Input id="pincode" placeholder="400001" />
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="saveAddress" />
-                  <Label htmlFor="saveAddress" className="text-sm">
-                    Save this address for future orders
-                  </Label>
-                </div>
+              <CardContent>
+                <AddressSelector onAddressSelect={setSelectedAddress} />
               </CardContent>
             </Card>
 
@@ -279,7 +253,7 @@ const Checkout = () => {
             <div className="text-right">
               <Button
                 onClick={handlePlaceOrder}
-                disabled={isPlacingOrder}
+                disabled={isPlacingOrder || !selectedAddress}
                 size="lg"
                 className="w-full lg:w-auto"
               >
