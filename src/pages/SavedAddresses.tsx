@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Plus, Edit, Trash2, Home, Building, ArrowLeft } from "lucide-react";
@@ -13,15 +12,18 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface Address {
-  id: string;
+  _id: string;
   type: 'home' | 'work' | 'other';
   name: string;
   phone: string;
-  address: string;
+  street: string;
   city: string;
   state: string;
-  pincode: string;
-  isDefault: boolean;
+  zip: string;
+  country: string;
+  is_default: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const SavedAddresses = () => {
@@ -29,35 +31,12 @@ const SavedAddresses = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: '1',
-      type: 'home',
-      name: 'John Doe',
-      phone: '+91 9876543210',
-      address: '123 Main Street, Apartment 4B',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400001',
-      isDefault: true
-    },
-    {
-      id: '2',
-      type: 'work',
-      name: 'John Doe',
-      phone: '+91 9876543210',
-      address: '456 Business Park, Office 301',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400002',
-      isDefault: false
-    }
-  ]);
-
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
+  const [loadingAddresses, setLoadingAddresses] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -65,7 +44,43 @@ const SavedAddresses = () => {
     }
   }, [user, loading, navigate]);
 
-  if (loading) {
+  useEffect(() => {
+    if (user) {
+      fetchAddresses();
+    }
+  }, [user]);
+
+  const fetchAddresses = async () => {
+    if (!user) return;
+
+    try {
+      setLoadingAddresses(true);
+      const response = await fetch(`http://127.0.0.1:8000/api/get-addresses?firebase_uid=${user.uid}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch addresses');
+      }
+
+      const data = await response.json();
+      setAddresses(data.addresses || []);
+    } catch (error) {
+      console.error('Error fetching addresses:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch addresses. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAddresses(false);
+    }
+  };
+
+  if (loading || loadingAddresses) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -107,53 +122,162 @@ const SavedAddresses = () => {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDeleteAddress = () => {
-    if (addressToDelete) {
-      setAddresses(addresses.filter(addr => addr.id !== addressToDelete));
+  const confirmDeleteAddress = async () => {
+  if (addressToDelete && user) {
+    try {
+      const response = await fetch('http://localhost:8000/api/delete-address/', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firebase_uid: user.uid,
+          address_id: addressToDelete
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete address');
+      }
+
+      // Refetch updated address list
+      await fetchAddresses();
+
       toast({
         title: "Address deleted",
         description: "Address has been successfully removed.",
       });
-    }
-    setDeleteDialogOpen(false);
-    setAddressToDelete(null);
-  };
-
-  const handleSaveAddress = (addressData: Omit<Address, 'id'>) => {
-    if (editingAddress) {
-      // Edit existing address
-      setAddresses(addresses.map(addr => 
-        addr.id === editingAddress.id 
-          ? { ...addressData, id: editingAddress.id }
-          : addr
-      ));
+    } catch (error) {
+      console.error('Error deleting address:', error);
       toast({
-        title: "Address updated",
-        description: "Address has been successfully updated.",
-      });
-    } else {
-      // Add new address
-      const newAddress: Address = {
-        ...addressData,
-        id: Date.now().toString(),
-      };
-      setAddresses([...addresses, newAddress]);
-      toast({
-        title: "Address added",
-        description: "New address has been successfully added.",
+        title: "Error",
+        description: "Failed to delete address. Please try again.",
+        variant: "destructive",
       });
     }
+  }
+
+  setDeleteDialogOpen(false);
+  setAddressToDelete(null);
+};
+
+
+  const handleSaveAddress = async (addressData: any) => {
+    if (!user) return;
+
+    try {
+      if (editingAddress) {
+        // Edit existing address
+        const response = await fetch('http://127.0.0.1:8000/api/edit-address/', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            firebase_uid: user.uid,
+            address_id: editingAddress._id,
+            type: addressData.type,
+            name: addressData.name,
+            Phone_Number: addressData.phone,
+            address: {
+              street: addressData.address,
+              city: addressData.city,
+              state: addressData.state,
+              zip: addressData.pincode,
+              country: "India"
+            }
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update address');
+        }
+
+        toast({
+          title: "Address updated",
+          description: "Address has been successfully updated.",
+        });
+      } else {
+        // Add new address
+        const response = await fetch('http://127.0.0.1:8000/api/add-address/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            firebase_uid: user.uid,
+            name: addressData.name,
+            Phone_Number: addressData.phone,
+            type: addressData.type,
+            address: {
+              street: addressData.address,
+              city: addressData.city,
+              state: addressData.state,
+              zip: addressData.pincode,
+              country: "India"
+            }
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to add address');
+        }
+
+        toast({
+          title: "Address added",
+          description: "New address has been successfully added.",
+        });
+      }
+
+      // Refresh addresses
+      await fetchAddresses();
+    } catch (error) {
+      console.error('Error saving address:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save address. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleSetDefault = (id: string) => {
-    setAddresses(addresses.map(addr => ({
-      ...addr,
-      isDefault: addr.id === id
-    })));
-    toast({
-      title: "Default address updated",
-      description: "Default address has been changed.",
-    });
+  const handleSetDefault = async (id: string) => {
+    if (!user) return;
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/set-default-address/', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firebase_uid: user.uid,
+          address_id: id
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to set default address');
+      }
+
+      // Update local state
+      setAddresses(addresses.map(addr => ({
+        ...addr,
+        is_default: addr._id === id
+      })));
+
+      toast({
+        title: "Default address updated",
+        description: "Default address has been changed.",
+      });
+    } catch (error) {
+      console.error('Error setting default address:', error);
+      toast({
+        title: "Error",
+        description: "Failed to set default address. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -182,7 +306,7 @@ const SavedAddresses = () => {
         {/* Addresses List */}
         <div className="space-y-4">
           {addresses.map((address) => (
-            <Card key={address.id} className="hover:shadow-lg transition-shadow">
+            <Card key={address._id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -191,16 +315,16 @@ const SavedAddresses = () => {
                         {getAddressIcon(address.type)}
                         <span className="font-medium capitalize">{address.type}</span>
                       </div>
-                      {address.isDefault && (
+                      {address.is_default && (
                         <Badge variant="default">Default</Badge>
                       )}
                     </div>
                     
-                    <h3 className="font-semibold text-lg text-gray-900 mb-1">{address.name}</h3>
+                    <h3 className="font-semibold text-lg text-gray-900 mb-1">{address.name || 'Address'}</h3>
                     <p className="text-gray-600 mb-1">{address.phone}</p>
-                    <p className="text-gray-700 mb-2">{address.address}</p>
+                    <p className="text-gray-700 mb-2">{address.street}</p>
                     <p className="text-gray-600">
-                      {address.city}, {address.state} - {address.pincode}
+                      {address.city}, {address.state} - {address.zip}
                     </p>
                   </div>
                   
@@ -216,16 +340,16 @@ const SavedAddresses = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteAddress(address.id)}
+                      onClick={() => handleDeleteAddress(address._id)}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
                     </Button>
-                    {!address.isDefault && (
+                    {!address.is_default && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSetDefault(address.id)}
+                        onClick={() => handleSetDefault(address._id)}
                       >
                         Set as Default
                       </Button>

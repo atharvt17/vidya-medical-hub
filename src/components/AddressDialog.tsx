@@ -26,23 +26,23 @@ import { useForm } from "react-hook-form";
 import { Home, Building, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
 
-
 interface Address {
-  id: string;
+  _id: string;
   type: 'home' | 'work' | 'other';
   name: string;
   phone: string;
-  address: string;
+  street: string;
   city: string;
   state: string;
-  pincode: string;
-  isDefault: boolean;
+  zip: string;
+  country: string;
+  is_default: boolean;
 }
 
 interface AddressDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (address: Omit<Address, 'id'>) => void;
+  onSave: (address: any) => void;
   address?: Address;
 }
 
@@ -60,11 +60,11 @@ export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDi
       type: address?.type || 'home',
       name: address?.name || '',
       phone: address?.phone ? address.phone.replace('+91', '') : '',
-      address: address?.address || '',
+      address: address?.street || '',
       city: address?.city || '',
       state: 'Chhattisgarh',
-      pincode: address?.pincode || '',
-      isDefault: address?.isDefault || false,
+      pincode: address?.zip || '',
+      isDefault: address?.is_default || false,
     }
   });
 
@@ -78,7 +78,8 @@ export const AddressDialog = ({ open, onOpenChange, onSave, address }: AddressDi
     // Log in the specified format
     console.log({
       firebase_uid: user?.uid || '',
-      type:data.type,
+      name: data?.name || '',
+      type: data.type,
       Phone_Number: phoneWithCountryCode,
       address: {
         street: data.address,
