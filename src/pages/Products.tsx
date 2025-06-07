@@ -1,7 +1,7 @@
-
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { Filter, Grid, List } from "lucide-react";
+import { useQuery } from '@apollo/client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,165 +10,109 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
+import { GET_PRODUCTS } from "@/lib/queries/products";
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  imageUrl: string;
+  category: string;
+  stockQuantity: number;
+  manufacturer: string,
+  requiresPrescription: boolean;
+  rating: number;
+  ingredients: string[];
+}
 
 const Products = () => {
-  const [searchParams] = useSearchParams();
+  const { data, loading, error } = useQuery(GET_PRODUCTS);
   const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [prescriptionOnly, setPrescriptionOnly] = useState(false);
+  const [sortBy, setSortBy] = useState("featured");
 
-  const allProducts = [
-    {
-      id: 1,
-      name: "Paracetamol 500mg",
-      price: 25.50,
-      originalPrice: 30.00,
-      rating: 4.5,
-      reviews: 234,
-      category: "prescription",
-      brand: "Cipla",
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=300&fit=crop",
-      inStock: true,
-      prescription: true
-    },
-    {
-      id: 2,
-      name: "Vitamin D3 Tablets",
-      price: 180.00,
-      originalPrice: 200.00,
-      rating: 4.7,
-      reviews: 156,
-      category: "supplements",
-      brand: "HealthKart",
-      image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=300&fit=crop",
-      inStock: true,
-      prescription: false
-    },
-    {
-      id: 3,
-      name: "Hand Sanitizer 100ml",
-      price: 45.00,
-      originalPrice: 50.00,
-      rating: 4.3,
-      reviews: 89,
-      category: "personal-care",
-      brand: "Dettol",
-      image: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=300&h=300&fit=crop",
-      inStock: true,
-      prescription: false
-    },
-    {
-      id: 4,
-      name: "Omega-3 Fish Oil",
-      price: 350.00,
-      originalPrice: 400.00,
-      rating: 4.6,
-      reviews: 198,
-      category: "supplements",
-      brand: "NOW Foods",
-      image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=300&h=300&fit=crop",
-      inStock: true,
-      prescription: false
-    },
-    {
-      id: 5,
-      name: "Baby Lotion 200ml",
-      price: 120.00,
-      originalPrice: 140.00,
-      rating: 4.8,
-      reviews: 312,
-      category: "baby-care",
-      brand: "Johnson's",
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=300&fit=crop",
-      inStock: true,
-      prescription: false
-    },
-    {
-      id: 6,
-      name: "Cough Syrup 100ml",
-      price: 85.00,
-      originalPrice: 95.00,
-      rating: 4.4,
-      reviews: 145,
-      category: "otc",
-      brand: "Benadryl",
-      image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=300&h=300&fit=crop",
-      inStock: false,
-      prescription: false
-    }
-  ];
+  const products: Product[] = data?.products || [];
 
-  // Filter products based on selected filters
-  const filteredProducts = allProducts.filter(product => {
-    // Category filter
-    if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
-      return false;
-    }
-    
-    // Brand filter
-    if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand.toLowerCase().replace(/\s+/g, ''))) {
-      return false;
-    }
-    
-    // Price range filter
-    if (selectedPriceRanges.length > 0) {
-      const priceInRange = selectedPriceRanges.some(range => {
-        switch (range) {
-          case 'under-50': return product.price < 50;
-          case '50-100': return product.price >= 50 && product.price <= 100;
-          case '100-200': return product.price >= 100 && product.price <= 200;
-          case 'above-200': return product.price > 200;
-          default: return false;
-        }
-      });
-      if (!priceInRange) return false;
-    }
-    
-    // Stock filter
-    if (inStockOnly && !product.inStock) {
-      return false;
-    }
-    
-    // Prescription filter
-    if (prescriptionOnly && !product.prescription) {
-      return false;
-    }
-    
-    return true;
-  });
+  // Filter and sort products
+  const filteredAndSortedProducts = useMemo(() => {
+    let filtered = products.filter(product => {
+      // Category filter
+      if (selectedCategories.length > 0 && !selectedCategories.includes(product.category.toLowerCase())) {
+        return false;
+      }
+      
+      // Price range filter
+      if (selectedPriceRanges.length > 0) {
+        const priceInRange = selectedPriceRanges.some(range => {
+          switch (range) {
+            case 'under-50': return product.price < 50;
+            case '50-100': return product.price >= 50 && product.price <= 100;
+            case '100-200': return product.price >= 100 && product.price <= 200;
+            case 'above-200': return product.price > 200;
+            default: return false;
+          }
+        });
+        if (!priceInRange) return false;
+      }
+      
+      // Stock filter
+      if (inStockOnly && product.stockQuantity <= 0) {
+        return false;
+      }
+      
+      // Prescription filter
+      if (prescriptionOnly && !product.requiresPrescription) {
+        return false;
+      }
+      
+      return true;
+    });
 
-  const categories = [
-    { id: "prescription", name: "Prescription", count: 24 },
-    { id: "otc", name: "Over-the-Counter", count: 18 },
-    { id: "supplements", name: "Supplements", count: 32 },
-    { id: "personal-care", name: "Personal Care", count: 45 },
-    { id: "baby-care", name: "Baby Care", count: 15 }
-  ];
+    // Sort products
+    switch (sortBy) {
+      case 'price-low':
+        return [...filtered].sort((a, b) => a.price - b.price);
+      case 'price-high':
+        return [...filtered].sort((a, b) => b.price - a.price);
+      case 'rating':
+        return [...filtered].sort((a, b) => b.rating - a.rating);
+      case 'newest':
+        return [...filtered].sort((a, b) => b.id.localeCompare(a.id));
+      case 'featured':
+      default:
+        return filtered;
+    }
+  }, [products, selectedCategories, selectedPriceRanges, inStockOnly, prescriptionOnly, sortBy]);
 
-  const brands = [
-    { id: "cipla", name: "Cipla", count: 12 },
-    { id: "healthkart", name: "HealthKart", count: 8 },
-    { id: "dettol", name: "Dettol", count: 6 },
-    { id: "johnson's", name: "Johnson's", count: 9 }
-  ];
+  // Generate dynamic categories from products
+  const categories = useMemo(() => {
+    const categoryMap = new Map();
+    products.forEach(product => {
+      const category = product.category.toLowerCase();
+      if (categoryMap.has(category)) {
+        categoryMap.set(category, categoryMap.get(category) + 1);
+      } else {
+        categoryMap.set(category, 1);
+      }
+    });
+    
+    return Array.from(categoryMap.entries()).map(([category, count]) => ({
+      id: category,
+      name: category.charAt(0).toUpperCase() + category.slice(1),
+      count
+    }));
+  }, [products]);
 
   const handleCategoryChange = (categoryId: string, checked: boolean) => {
     if (checked) {
       setSelectedCategories([...selectedCategories, categoryId]);
     } else {
       setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
-    }
-  };
-
-  const handleBrandChange = (brandId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedBrands([...selectedBrands, brandId]);
-    } else {
-      setSelectedBrands(selectedBrands.filter(id => id !== brandId));
     }
   };
 
@@ -179,6 +123,34 @@ const Products = () => {
       setSelectedPriceRanges(selectedPriceRanges.filter(id => id !== rangeId));
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">Loading products...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg">Error loading products: {error.message}</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -198,10 +170,10 @@ const Products = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">All Products</h1>
-            <p className="text-gray-600">Showing {filteredProducts.length} products</p>
+            <p className="text-gray-600">Showing {filteredAndSortedProducts.length} products</p>
           </div>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            <Select defaultValue="featured">
+            <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-48">
                 <SelectValue />
               </SelectTrigger>
@@ -261,28 +233,6 @@ const Products = () => {
                           {category.name}
                         </Label>
                         <span className="text-xs text-gray-500">({category.count})</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Brands Filter */}
-              <Card>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-4">Brands</h3>
-                  <div className="space-y-3">
-                    {brands.map((brand) => (
-                      <div key={brand.id} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={brand.id} 
-                          checked={selectedBrands.includes(brand.id)}
-                          onCheckedChange={(checked) => handleBrandChange(brand.id, checked as boolean)}
-                        />
-                        <Label htmlFor={brand.id} className="text-sm flex-1 cursor-pointer">
-                          {brand.name}
-                        </Label>
-                        <span className="text-xs text-gray-500">({brand.count})</span>
                       </div>
                     ))}
                   </div>
@@ -360,19 +310,31 @@ const Products = () => {
           {/* Products Grid */}
           <div className="flex-1">
             <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {filteredAndSortedProducts.map((product) => (
+                <ProductCard 
+                  key={product.id} 
+                  product={{
+                    id: parseInt(product.id),
+                    name: product.name,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    image: product.imageUrl,
+                    brand: product.manufacturer, // You might want to add manufacturer field to the query
+                    rating: product.rating,
+                    prescription: product.requiresPrescription,
+                    inStock: product.stockQuantity > 0
+                  }} 
+                />
               ))}
             </div>
             
-            {filteredProducts.length === 0 && (
+            {filteredAndSortedProducts.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">No products found matching your filters.</p>
                 <Button 
                   variant="outline" 
                   onClick={() => {
                     setSelectedCategories([]);
-                    setSelectedBrands([]);
                     setSelectedPriceRanges([]);
                     setInStockOnly(false);
                     setPrescriptionOnly(false);
