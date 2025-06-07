@@ -314,12 +314,12 @@ const Products = () => {
                 <ProductCard 
                   key={product.id} 
                   product={{
-                    id: parseInt(product.id),
+                    id: product.id,
                     name: product.name,
                     price: product.price,
                     originalPrice: product.originalPrice,
                     image: product.imageUrl,
-                    brand: product.manufacturer, // You might want to add manufacturer field to the query
+                    brand: product.manufacturer,
                     rating: product.rating,
                     prescription: product.requiresPrescription,
                     inStock: product.stockQuantity > 0

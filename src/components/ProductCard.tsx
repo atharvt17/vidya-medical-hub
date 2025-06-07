@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthProvider";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -35,7 +35,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
       navigate("/login");
       return;
     }
-
 
     console.log("Adding to cart, product ID:", product.id);
     
