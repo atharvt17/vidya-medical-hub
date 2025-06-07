@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +7,7 @@ import { ApolloProvider } from '@apollo/client';
 import { apolloClient } from '@/lib/apolloClient';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 import { useAuth } from "@/lib/AuthProvider";
 
 import Index from "./pages/Index";
@@ -20,6 +22,7 @@ import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import SavedAddresses from "./pages/SavedAddresses";
 import MyOrders from "./pages/MyOrders";
+import Wishlist from "./pages/Wishlist";
 
 const queryClient = new QueryClient();
 
@@ -41,61 +44,64 @@ const App = () => (
   <ApolloProvider client={apolloClient}>
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/product/:id" element={<ProductDetails />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route
-                path="/checkout"
-                element={
-                  <ProtectedRoute>
-                    <Checkout />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/upload-prescription"
-                element={
-                  <ProtectedRoute>
-                    <UploadPrescription />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/saved-addresses"
-                element={
-                  <ProtectedRoute>
-                    <SavedAddresses />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/my-orders"
-                element={
-                  <ProtectedRoute>
-                    <MyOrders />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <WishlistProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/product/:id" element={<ProductDetails />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route
+                  path="/checkout"
+                  element={
+                    <ProtectedRoute>
+                      <Checkout />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/upload-prescription"
+                  element={
+                    <ProtectedRoute>
+                      <UploadPrescription />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/saved-addresses"
+                  element={
+                    <ProtectedRoute>
+                      <SavedAddresses />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/my-orders"
+                  element={
+                    <ProtectedRoute>
+                      <MyOrders />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </WishlistProvider>
       </CartProvider>
     </QueryClientProvider>
   </ApolloProvider>
