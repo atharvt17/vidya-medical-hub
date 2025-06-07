@@ -59,6 +59,10 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const addToWishlist = async (product: WishlistItem) => {
     if (!user) return;
 
+    // Optimistic UI update - add immediately
+    setWishlistItems(prev => [...prev, product]);
+    toast.success(`${product.name} added to wishlist!`);
+
     try {
       const response = await fetch('http://localhost:8000/api/wishlist/', {
         method: 'POST',
@@ -71,20 +75,28 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
         }),
       });
 
-      if (response.ok) {
-        setWishlistItems(prev => [...prev, product]);
-        toast.success(`${product.name} added to wishlist!`);
-      } else {
+      if (!response.ok) {
+        // Revert the optimistic update on failure
+        setWishlistItems(prev => prev.filter(item => item.id !== product.id));
         toast.error('Failed to add to wishlist');
       }
     } catch (error) {
       console.error('Error adding to wishlist:', error);
+      // Revert the optimistic update on error
+      setWishlistItems(prev => prev.filter(item => item.id !== product.id));
       toast.error('Failed to add to wishlist');
     }
   };
 
   const removeFromWishlist = async (productId: string) => {
     if (!user) return;
+
+    // Store the item for potential rollback
+    const removedItem = wishlistItems.find(item => item.id === productId);
+    
+    // Optimistic UI update - remove immediately
+    setWishlistItems(prev => prev.filter(item => item.id !== productId));
+    toast.success('Product removed from wishlist!');
 
     try {
       const response = await fetch('http://localhost:8000/api/wishlist/', {
@@ -98,14 +110,19 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
         }),
       });
 
-      if (response.ok) {
-        setWishlistItems(prev => prev.filter(item => item.id !== productId));
-        toast.success('Product removed from wishlist!');
-      } else {
+      if (!response.ok) {
+        // Revert the optimistic update on failure
+        if (removedItem) {
+          setWishlistItems(prev => [...prev, removedItem]);
+        }
         toast.error('Failed to remove from wishlist');
       }
     } catch (error) {
       console.error('Error removing from wishlist:', error);
+      // Revert the optimistic update on error
+      if (removedItem) {
+        setWishlistItems(prev => [...prev, removedItem]);
+      }
       toast.error('Failed to remove from wishlist');
     }
   };
