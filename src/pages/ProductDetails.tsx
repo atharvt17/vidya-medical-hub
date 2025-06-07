@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from '@apollo/client';
 import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,27 +11,7 @@ import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthProvider";
-
-// Mock product data - in a real app, this would come from an API
-const productData = {
-  "1": {
-    id: 1,
-    name: "Paracetamol 500mg Tablets",
-    price: 45,
-    originalPrice: 60,
-    brand: "Apollo Pharmacy",
-    rating: 4.5,
-    reviews: 128,
-    inStock: true,
-    prescription: false,
-    images: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
-    description: "Paracetamol is a common painkiller used to treat aches and pain. It can also be used to reduce a high temperature.",
-    ingredients: ["Paracetamol 500mg"],
-    dosage: "Adults and children aged 16 years and over: 1-2 tablets every 4-6 hours as required. Do not take more than 8 tablets in 24 hours.",
-    warnings: "Do not exceed the stated dose. Keep out of reach of children.",
-    category: "Pain Relief"
-  }
-};
+import { GET_PRODUCT_BY_ID } from "@/lib/queries/productDetails";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -40,9 +21,24 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  const product = id ? productData[id as keyof typeof productData] : undefined;
+  const { data, loading, error } = useQuery(GET_PRODUCT_BY_ID, {
+    variables: { id: id || "" },
+    skip: !id,
+  });
 
-  if (!product) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Loading...</h1>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !data?.product) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -57,6 +53,11 @@ const ProductDetails = () => {
     );
   }
 
+  const product = data.product;
+  
+  // Create a mock images array since the API only returns one imageUrl
+  const images = [product.imageUrl, product.imageUrl, product.imageUrl];
+
   const handleAddToCart = () => {
     if (!user) {
       navigate("/login");
@@ -68,9 +69,9 @@ const ProductDetails = () => {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.images[0],
-        brand: product.brand,
-        prescription: product.prescription,
+        image: product.imageUrl,
+        brand: product.manufacturer,
+        prescription: product.requiresPrescription,
       });
     }
     toast.success(`${quantity} x ${product.name} added to cart!`);
@@ -92,7 +93,7 @@ const ProductDetails = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-8">
-          <span>Home</span> / <span>Products</span> / <span>{product.category}</span> / <span className="text-gray-900">{product.name}</span>
+          <span>Home</span> / <span>Products</span> / <span className="text-gray-900">{product.name}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -100,13 +101,13 @@ const ProductDetails = () => {
           <div>
             <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100">
               <img
-                src={product.images[selectedImage]}
+                src={images[selectedImage]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex space-x-2">
-              {product.images.map((image, index) => (
+              {images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
@@ -123,8 +124,8 @@ const ProductDetails = () => {
           {/* Product Info */}
           <div>
             <div className="flex items-center space-x-2 mb-2">
-              <span className="text-sm text-gray-600">{product.brand}</span>
-              {product.prescription && (
+              <span className="text-sm text-gray-600">{product.manufacturer}</span>
+              {product.requiresPrescription && (
                 <Badge variant="secondary">Prescription Required</Badge>
               )}
             </div>
@@ -135,22 +136,21 @@ const ProductDetails = () => {
               <div className="flex items-center space-x-1">
                 <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                 <span className="font-semibold">{product.rating}</span>
-                <span className="text-gray-600">({product.reviews} reviews)</span>
               </div>
-              <span className={`px-2 py-1 rounded text-sm ${product.inStock ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                {product.inStock ? "In Stock" : "Out of Stock"}
+              <span className="px-2 py-1 rounded text-sm bg-green-100 text-green-800">
+                In Stock
               </span>
             </div>
 
             <div className="flex items-center space-x-3 mb-6">
               <span className="text-3xl font-bold text-gray-900">₹{product.price}</span>
-              {product.originalPrice && (
-                <span className="text-xl text-gray-500 line-through">₹{product.originalPrice}</span>
-              )}
-              {product.originalPrice && (
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
-                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                </span>
+              {product.originalPrice && product.originalPrice !== product.price && (
+                <>
+                  <span className="text-xl text-gray-500 line-through">₹{product.originalPrice}</span>
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                    {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                  </span>
+                </>
               )}
             </div>
 
@@ -181,7 +181,6 @@ const ProductDetails = () => {
             <div className="flex space-x-4 mb-8">
               <Button
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
                 className="flex-1"
                 size="lg"
               >

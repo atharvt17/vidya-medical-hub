@@ -35,6 +35,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
       navigate("/login");
       return;
     }
+
+
+    console.log("Adding to cart, product ID:", product.id);
     
     addToCart({
       id: product.id,
