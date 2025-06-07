@@ -52,10 +52,12 @@ const Header = () => {
           <div className="flex items-center space-x-6">
             {user ? (
               <>
-                <Button variant="ghost" size="sm" className="hidden md:flex">
-                  <Heart className="h-5 w-5 mr-2" />
-                  Wishlist
-                </Button>
+                <Link to="/wishlist">
+                  <Button variant="ghost" size="sm" className="hidden md:flex">
+                    <Heart className="h-5 w-5 mr-2" />
+                    Wishlist
+                  </Button>
+                </Link>
                 <Link to="/cart">
                   <Button variant="ghost" size="sm" className="relative">
                     <ShoppingCart className="h-5 w-5 mr-2" />

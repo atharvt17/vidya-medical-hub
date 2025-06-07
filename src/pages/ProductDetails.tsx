@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from '@apollo/client';
@@ -9,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthProvider";
 import { GET_PRODUCT_BY_ID } from "@/lib/queries/productDetails";
@@ -17,6 +19,7 @@ const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -77,13 +80,29 @@ const ProductDetails = () => {
     toast.success(`${quantity} x ${product.name} added to cart!`);
   };
 
-  const handleAddToWishlist = () => {
+  const handleWishlistToggle = () => {
     if (!user) {
       navigate("/login");
       return;
     }
-    
-    toast.success(`${product.name} added to wishlist!`);
+
+    const wishlistProduct = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.imageUrl,
+      brand: product.manufacturer,
+      rating: product.rating,
+      prescription: product.requiresPrescription,
+      inStock: true, // Assuming product details page shows in-stock items
+    };
+
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(wishlistProduct);
+    }
   };
 
   return (
@@ -189,10 +208,11 @@ const ProductDetails = () => {
               </Button>
               <Button
                 variant="outline"
-                onClick={handleAddToWishlist}
+                onClick={handleWishlistToggle}
                 size="lg"
+                className={isInWishlist(product.id) ? 'text-red-500 border-red-500' : ''}
               >
-                <Heart className="h-5 w-5" />
+                <Heart className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
               </Button>
             </div>
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthProvider";
 
@@ -27,6 +28,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -49,13 +51,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
     toast.success(`${product.name} added to cart!`);
   };
 
-  const handleAddToWishlist = () => {
+  const handleWishlistToggle = () => {
     if (!user) {
       navigate("/login");
       return;
     }
-    
-    toast.success(`${product.name} added to wishlist!`);
+
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
   };
 
   return (
@@ -83,10 +89,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0"
-                onClick={handleAddToWishlist}
+                className={`h-8 w-8 p-0 ${
+                  isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400'
+                } hover:text-red-500`}
+                onClick={handleWishlistToggle}
               >
-                <Heart className="h-4 w-4" />
+                <Heart className={`h-4 w-4 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
               </Button>
             </div>
           </div>
