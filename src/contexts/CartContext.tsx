@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useAuth } from '@/lib/AuthProvider';
 
 export interface CartItem {
   id: string;
@@ -19,6 +20,7 @@ interface CartContextType {
   clearCart: () => void;
   getCartTotal: () => number;
   getCartItemsCount: () => number;
+  loading: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -33,6 +35,48 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+
+  // Fetch cart data from API when user is authenticated
+  useEffect(() => {
+    const fetchCartData = async () => {
+      if (!user?.uid) {
+        setCartItems([]);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const response = await fetch(`http://localhost:8000/api/cart/?userId=${user.uid}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Fetched cart data:', data);
+          
+          // Transform API data to match CartItem interface
+          const transformedItems: CartItem[] = data.items?.map((item: any) => ({
+            id: item.product_id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image_url,
+            brand: item.manufacturer,
+            prescription: item.requires_prescription,
+          })) || [];
+          
+          setCartItems(transformedItems);
+        } else {
+          console.error('Failed to fetch cart data:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching cart data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCartData();
+  }, [user?.uid]);
 
   const addToCart = (product: Omit<CartItem, 'quantity'>, quantity: number = 1) => {
     setCartItems(prev => {
@@ -81,7 +125,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       removeFromCart,
       clearCart,
       getCartTotal,
-      getCartItemsCount
+      getCartItemsCount,
+      loading
     }}>
       {children}
     </CartContext.Provider>
