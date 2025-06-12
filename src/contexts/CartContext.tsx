@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { useAuth } from '@/lib/AuthProvider';
 import { toast } from "sonner";
 
-
 export interface CartItem {
   id: string;
   name: string;
@@ -94,17 +93,59 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity < 1) return;
+  const updateQuantity = async (id: string, quantity: number) => {
+    if (quantity < 1 || !user?.uid) return;
+
+    // Store previous state for rollback
+    const previousItems = [...cartItems];
+    
+    // Optimistic update - update UI immediately
     setCartItems(prev =>
       prev.map(item =>
         item.id === id ? { ...item, quantity } : item
       )
     );
+
+    try {
+      const response = await fetch('http://localhost:8000/api/cart/', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+          items: [
+            {
+              product_id: id,
+              quantity: quantity
+            }
+          ]
+        }),
+      });
+
+      if (!response.ok) {
+        // Rollback on failure
+        setCartItems(previousItems);
+        console.error('Failed to update quantity:', response.status);
+        toast.error('Failed to update quantity');
+      }
+    } catch (error) {
+      // Rollback on error
+      setCartItems(previousItems);
+      console.error('Error updating quantity:', error);
+      toast.error('Error updating quantity');
+    }
   };
 
   const removeFromCart = async (id: string) => {
     if (!user?.uid) return;
+
+    // Store previous state and item for rollback
+    const previousItems = [...cartItems];
+    const removedItem = cartItems.find(item => item.id === id);
+
+    // Optimistic update - remove item immediately from UI
+    setCartItems(prev => prev.filter(item => item.id !== id));
 
     try {
       const response = await fetch(`http://localhost:8000/api/cart/?userId=${user.uid}&product_id=${id}`, {
@@ -112,18 +153,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (response.ok) {
-        
-        const removedItem = cartItems.find(item => item.id === id)
-        setCartItems(prev => prev.filter(item => item.id !== id));
         if (removedItem) {
           toast.success(`${removedItem.name} removed from cart.`);
         }
       } else {
+        // Rollback on failure
+        setCartItems(previousItems);
         console.error('Failed to remove item from cart:', response.status);
         toast.error('Failed to remove item from cart');
-
       }
     } catch (error) {
+      // Rollback on error
+      setCartItems(previousItems);
       toast.error('Error removing item from cart');
       console.error('Error removing item from cart:', error);
     }
@@ -132,21 +173,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const clearCart = async () => {
     if (!user?.uid) return;
 
+    // Store previous state for rollback
+    const previousItems = [...cartItems];
+
+    // Optimistic update - clear cart immediately
+    setCartItems([]);
+
     try {
       const response = await fetch(`http://localhost:8000/api/cart/?userId=${user.uid}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        setCartItems([]);
         toast.success('Cart cleared successfully');
       } else {
+        // Rollback on failure
+        setCartItems(previousItems);
         console.error('Failed to clear cart:', response.status);
         toast.error('Failed to clear cart');
       }
     } catch (error) {
+      // Rollback on error
+      setCartItems(previousItems);
       console.error('Error clearing cart:', error);
-      console.error('Error clearing cart:', error);
+      toast.error('Error clearing cart');
     }
   };
 
