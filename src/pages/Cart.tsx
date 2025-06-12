@@ -9,13 +9,28 @@ import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 
 const Cart = () => {
-  const { cartItems, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, clearCart, getCartTotal, loading } = useCart();
 
   const subtotal = getCartTotal();
   const deliveryFee = subtotal > 500 ? 0 : 50;
   const total = subtotal + deliveryFee;
 
   const prescriptionItems = cartItems.filter(item => item.prescription);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h1 className="text-2xl font-bold text-gray-900">Loading your cart...</h1>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
