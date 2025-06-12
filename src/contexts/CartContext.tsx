@@ -1,6 +1,8 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthProvider';
+import { toast } from "sonner";
+
 
 export interface CartItem {
   id: string;
@@ -101,12 +103,51 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const removeFromCart = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+  const removeFromCart = async (id: string) => {
+    if (!user?.uid) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/cart/?userId=${user.uid}&product_id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        
+        const removedItem = cartItems.find(item => item.id === id)
+        setCartItems(prev => prev.filter(item => item.id !== id));
+        if (removedItem) {
+          toast.success(`${removedItem.name} removed from cart.`);
+        }
+      } else {
+        console.error('Failed to remove item from cart:', response.status);
+        toast.error('Failed to remove item from cart');
+
+      }
+    } catch (error) {
+      toast.error('Error removing item from cart');
+      console.error('Error removing item from cart:', error);
+    }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  const clearCart = async () => {
+    if (!user?.uid) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/cart/?userId=${user.uid}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setCartItems([]);
+        toast.success('Cart cleared successfully');
+      } else {
+        console.error('Failed to clear cart:', response.status);
+        toast.error('Failed to clear cart');
+      }
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      console.error('Error clearing cart:', error);
+    }
   };
 
   const getCartTotal = () => {
