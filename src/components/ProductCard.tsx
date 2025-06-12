@@ -34,25 +34,57 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
 
-  const handleAddToCart = () => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+  const handleAddToCart = async () => {
+  if (!user) {
+    navigate("/login");
+    return;
+  }
 
-    console.log("Adding to cart, product ID:", product.id, "quantity:", quantity);
-    
-    addToCart({
+  console.log("Adding to cart, product ID:", product.id, "quantity:", quantity);
+
+  // Add to local context/cart
+  addToCart(
+    {
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
       brand: product.brand,
       prescription: product.prescription,
-    }, quantity);
+    },
+    quantity
+  );
+
+  // Send POST request to backend
+  try {
+    const response = await fetch("http://localhost:8000/api/cart/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: user.uid, // Assuming `user.uid` contains the Firebase ID
+        items: [
+          {
+            product_id: product.id,
+            quantity: quantity,
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to add to cart on server");
+    }
+
     toast.success(`${quantity} x ${product.name} added to cart!`);
-    setQuantity(1); // Reset quantity after adding to cart
-  };
+  } catch (error) {
+    console.error("API error:", error);
+    toast.error("Failed to sync cart with server");
+  }
+
+  setQuantity(1); // Reset quantity after adding to cart
+};
 
   const handleWishlistToggle = () => {
     if (!user) {
