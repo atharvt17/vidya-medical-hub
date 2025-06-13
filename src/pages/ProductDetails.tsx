@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from '@apollo/client';
-import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
+import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -105,6 +104,14 @@ const ProductDetails = () => {
     }
   };
 
+  const handlePrevImage = () => {
+    setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -118,12 +125,29 @@ const ProductDetails = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div>
-            <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100">
+            <div className="relative aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100">
               <img
                 src={images[selectedImage]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
+              {/* Navigation Buttons */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                onClick={handlePrevImage}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                onClick={handleNextImage}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
             </div>
             <div className="flex space-x-2">
               {images.map((image, index) => (
