@@ -45,7 +45,7 @@ const SearchCommand = ({ open, setOpen }: SearchCommandProps) => {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <DialogTitle className="sr-only">Search medicines and healthcare products</DialogTitle>
-      <Command className="rounded-lg border shadow-md">
+      <Command className="rounded-lg border shadow-md" shouldFilter={false}>
         <CommandInput
           placeholder="Search medicines, healthcare products..."
           value={query}
