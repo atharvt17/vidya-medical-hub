@@ -125,29 +125,25 @@ const ProductDetails = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div>
-            <div className="relative aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100">
+            <div className="relative aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100 group">
               <img
                 src={images[selectedImage]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
               {/* Navigation Buttons */}
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
+              <button
                 onClick={handlePrevImage}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100"
               >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                <ChevronLeft className="h-4 w-4 text-white" />
+              </button>
+              <button
                 onClick={handleNextImage}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100"
               >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
+                <ChevronRight className="h-4 w-4 text-white" />
+              </button>
             </div>
             <div className="flex space-x-2">
               {images.map((image, index) => (
