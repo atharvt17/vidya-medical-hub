@@ -26,14 +26,12 @@ const SearchCommand = ({ open, setOpen }: SearchCommandProps) => {
   const { suggestions, loading, searchProducts } = useSearchSuggestions(query);
 
   const handleSelect = async (value: string) => {
-    // Extract the text from the unique value (format: "id|text")
-    const searchText = value.split('|')[1] || value;
-    setQuery(searchText);
-    const results = await searchProducts(searchText);
+    // Extract the ID and text from the unique value (format: "id|text")
+    const [productId, searchText] = value.split('|');
     setOpen(false);
     
-    // Navigate to products page with search results
-    navigate('/products', { state: { searchResults: results, searchQuery: searchText } });
+    // Navigate directly to the product details page
+    navigate(`/product/${productId}`);
   };
 
   const handleSearch = async () => {
