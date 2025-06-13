@@ -39,6 +39,31 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
+  // Helper function to fetch product details by ID
+  const fetchProductDetails = async (productId: string): Promise<WishlistItem | null> => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/products/${productId}/`);
+      if (response.ok) {
+        const product = await response.json();
+        return {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          originalPrice: product.originalPrice,
+          image: product.imageUrl,
+          brand: product.manufacturer,
+          rating: product.rating,
+          prescription: product.requiresPrescription,
+          inStock: product.stockQuantity > 0
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+      return null;
+    }
+  };
+
   const fetchWishlist = async () => {
     if (!user || authLoading) return;
     
@@ -49,7 +74,19 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
       if (response.ok) {
         const data = await response.json();
         console.log('Wishlist data received:', data);
-        setWishlistItems(data.products || []);
+        
+        // Extract product IDs from the nested structure
+        const productIds = data.wishlist?.items?.map((item: { productId: string }) => item.productId) || [];
+        console.log('Product IDs from wishlist:', productIds);
+        
+        // Fetch full product details for each product ID
+        const productPromises = productIds.map((productId: string) => fetchProductDetails(productId));
+        const products = await Promise.all(productPromises);
+        
+        // Filter out any null results and set the wishlist items
+        const validProducts = products.filter((product): product is WishlistItem => product !== null);
+        console.log('Fetched product details:', validProducts);
+        setWishlistItems(validProducts);
       } else {
         console.error('Failed to fetch wishlist:', response.status, response.statusText);
       }
