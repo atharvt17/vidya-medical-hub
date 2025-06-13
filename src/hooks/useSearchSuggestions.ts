@@ -5,6 +5,7 @@ import { useDebounce } from './useDebounce';
 interface Suggestion {
   id: string;
   text: string;
+  manufacturer: string;
 }
 
 interface SearchResult {
@@ -32,6 +33,7 @@ export const useSearchSuggestions = (query: string) => {
         const response = await fetch(`http://localhost:5000/suggest?q=${encodeURIComponent(debouncedQuery)}`);
         if (response.ok) {
           const data = await response.json();
+          console.log(data);
           setSuggestions(data);
         }
       } catch (error) {

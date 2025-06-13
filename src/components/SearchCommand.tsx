@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Loader2 } from 'lucide-react';
@@ -85,7 +86,10 @@ const SearchCommand = ({ open, setOpen }: SearchCommandProps) => {
                   className="cursor-pointer"
                 >
                   <Search className="mr-2 h-4 w-4" />
-                  {suggestion.text}
+                  <div className="flex flex-col">
+                    <span>{suggestion.text}</span>
+                    <span className="text-xs text-muted-foreground">by {suggestion.manufacturer}</span>
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>
