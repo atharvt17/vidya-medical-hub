@@ -37,17 +37,21 @@ export const useWishlist = () => {
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const fetchWishlist = async () => {
-    if (!user) return;
+    if (!user || authLoading) return;
     
     setLoading(true);
     try {
+      console.log('Fetching wishlist for user:', user.uid);
       const response = await fetch(`http://localhost:8000/api/wishlist/?userId=${user.uid}`);
       if (response.ok) {
         const data = await response.json();
+        console.log('Wishlist data received:', data);
         setWishlistItems(data.products || []);
+      } else {
+        console.error('Failed to fetch wishlist:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -131,13 +135,16 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     return wishlistItems.some(item => item.id === productId);
   };
 
+  // Only fetch wishlist when user is authenticated and auth loading is complete
   useEffect(() => {
-    if (user) {
+    if (!authLoading && user) {
+      console.log('User authenticated, fetching wishlist...');
       fetchWishlist();
-    } else {
+    } else if (!authLoading && !user) {
+      console.log('User not authenticated, clearing wishlist...');
       setWishlistItems([]);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   return (
     <WishlistContext.Provider value={{
