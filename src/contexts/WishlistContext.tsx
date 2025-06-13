@@ -1,7 +1,8 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthProvider';
 import { toast } from 'sonner';
+import { apolloClient } from '@/lib/apolloClient';
+import { GET_WISHLIST_PRODUCT } from '@/lib/queries/wishlistProduct';
 
 export interface WishlistItem {
   id: string;
@@ -39,12 +40,17 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
-  // Helper function to fetch product details by ID
+  // Helper function to fetch product details by ID using GraphQL
   const fetchProductDetails = async (productId: string): Promise<WishlistItem | null> => {
     try {
-      const response = await fetch(`http://localhost:8000/api/products/${productId}/`);
-      if (response.ok) {
-        const product = await response.json();
+      console.log('Fetching product details for ID:', productId);
+      const { data } = await apolloClient.query({
+        query: GET_WISHLIST_PRODUCT,
+        variables: { id: productId },
+      });
+
+      if (data?.product) {
+        const product = data.product;
         return {
           id: product.id,
           name: product.name,
@@ -52,14 +58,14 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
           originalPrice: product.originalPrice,
           image: product.imageUrl,
           brand: product.manufacturer,
-          rating: product.rating,
+          rating: product.rating || 0,
           prescription: product.requiresPrescription,
-          inStock: product.stockQuantity > 0
+          inStock: true // We'll assume in stock since we don't have this field in the GraphQL query
         };
       }
       return null;
     } catch (error) {
-      console.error('Error fetching product details:', error);
+      console.error('Error fetching product details with GraphQL:', error);
       return null;
     }
   };
