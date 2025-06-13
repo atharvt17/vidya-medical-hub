@@ -12,6 +12,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Button } from '@/components/ui/button';
+import { DialogTitle } from '@/components/ui/dialog';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 
 interface SearchCommandProps {
@@ -43,22 +44,25 @@ const SearchCommand = ({ open, setOpen }: SearchCommandProps) => {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
+      <DialogTitle className="sr-only">Search medicines and healthcare products</DialogTitle>
       <Command className="rounded-lg border shadow-md">
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-          <CommandInput
-            placeholder="Search medicines, healthcare products..."
-            value={query}
-            onValueChange={setQuery}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSearch();
-              }
-            }}
-          />
-          {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-        </div>
+        <CommandInput
+          placeholder="Search medicines, healthcare products..."
+          value={query}
+          onValueChange={setQuery}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSearch();
+            }
+          }}
+        />
+        {loading && (
+          <div className="flex items-center justify-center px-3 py-2">
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <span className="text-sm text-muted-foreground">Searching...</span>
+          </div>
+        )}
         <CommandList>
           <CommandEmpty>
             {query ? (
