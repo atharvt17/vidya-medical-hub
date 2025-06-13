@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Filter, Grid, List } from "lucide-react";
 import { useQuery } from '@apollo/client';
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ interface Product {
 
 const Products = () => {
   const { data, loading, error } = useQuery(GET_PRODUCTS);
+  const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -37,6 +38,16 @@ const Products = () => {
   const [sortBy, setSortBy] = useState("featured");
 
   const products: Product[] = data?.products || [];
+
+  // Effect to handle URL category parameter
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      // Convert URL format to match our category format
+      const normalizedCategory = categoryParam.toLowerCase().replace('-', ' ');
+      setSelectedCategories([normalizedCategory]);
+    }
+  }, [searchParams]);
 
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
