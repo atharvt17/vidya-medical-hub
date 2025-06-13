@@ -26,12 +26,14 @@ const SearchCommand = ({ open, setOpen }: SearchCommandProps) => {
   const { suggestions, loading, searchProducts } = useSearchSuggestions(query);
 
   const handleSelect = async (value: string) => {
-    setQuery(value);
-    const results = await searchProducts(value);
+    // Extract the text from the unique value (format: "id|text")
+    const searchText = value.split('|')[1] || value;
+    setQuery(searchText);
+    const results = await searchProducts(searchText);
     setOpen(false);
     
     // Navigate to products page with search results
-    navigate('/products', { state: { searchResults: results, searchQuery: value } });
+    navigate('/products', { state: { searchResults: results, searchQuery: searchText } });
   };
 
   const handleSearch = async () => {
@@ -81,8 +83,8 @@ const SearchCommand = ({ open, setOpen }: SearchCommandProps) => {
               {suggestions.map((suggestion) => (
                 <CommandItem
                   key={suggestion.id}
-                  value={suggestion.text}
-                  onSelect={() => handleSelect(suggestion.text)}
+                  value={`${suggestion.id}|${suggestion.text}`}
+                  onSelect={() => handleSelect(`${suggestion.id}|${suggestion.text}`)}
                   className="cursor-pointer"
                 >
                   <Search className="mr-2 h-4 w-4" />
