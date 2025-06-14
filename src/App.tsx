@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { useAuth } from "@/lib/AuthProvider";
+import RouteGuard from "@/components/RouteGuard";
 
 import Index from "./pages/Index";
 import Products from "./pages/Products";
@@ -49,56 +50,58 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/product/:id" element={<ProductDetails />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route
-                  path="/checkout"
-                  element={
-                    <ProtectedRoute>
-                      <Checkout />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/upload-prescription"
-                  element={
-                    <ProtectedRoute>
-                      <UploadPrescription />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/saved-addresses"
-                  element={
-                    <ProtectedRoute>
-                      <SavedAddresses />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/my-orders"
-                  element={
-                    <ProtectedRoute>
-                      <MyOrders />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <RouteGuard>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/product/:id" element={<ProductDetails />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route
+                    path="/checkout"
+                    element={
+                      <ProtectedRoute>
+                        <Checkout />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/upload-prescription"
+                    element={
+                      <ProtectedRoute>
+                        <UploadPrescription />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/saved-addresses"
+                    element={
+                      <ProtectedRoute>
+                        <SavedAddresses />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-orders"
+                    element={
+                      <ProtectedRoute>
+                        <MyOrders />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </RouteGuard>
             </BrowserRouter>
           </TooltipProvider>
         </WishlistProvider>
