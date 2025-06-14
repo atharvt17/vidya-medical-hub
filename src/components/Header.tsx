@@ -35,38 +35,29 @@ const Header = () => {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Back Button or Logo */}
-            {!isHomePage ? (
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleBackClick}
-                  className="flex items-center space-x-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline">Back</span>
-                </Button>
-                <Link to="/" className="flex items-center space-x-2">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2">
+              {isHomePage ? (
+                <>
+                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xl">V</span>
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">Vidya Medical</h1>
+                    <p className="text-xs text-gray-500">Trusted Healthcare</p>
+                  </div>
+                </>
+              ) : (
+                <>
                   <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                     <span className="text-white font-bold text-sm">V</span>
                   </div>
                   <div className="hidden sm:block">
                     <h1 className="text-lg font-bold text-gray-900">Vidya Medical</h1>
                   </div>
-                </Link>
-              </div>
-            ) : (
-              <Link to="/" className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">V</span>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">Vidya Medical</h1>
-                  <p className="text-xs text-gray-500">Trusted Healthcare</p>
-                </div>
-              </Link>
-            )}
+                </>
+              )}
+            </Link>
 
             {/* Search Bar */}
             <div className="flex-1 max-w-2xl mx-8">
@@ -144,6 +135,21 @@ const Header = () => {
                 Personal Care
               </Link>
             </nav>
+          )}
+
+          {/* Back Button - Only show on non-home pages */}
+          {!isHomePage && (
+            <div className="py-2 border-t">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackClick}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back</span>
+              </Button>
+            </div>
           )}
         </div>
       </header>
