@@ -309,7 +309,7 @@ const Products = () => {
                       ))}
                     </CollapsibleContent>
                   </Collapsible>
-                </div>
+                </CardContent>
               </Card>
 
               {/* Price Range Filter */}
