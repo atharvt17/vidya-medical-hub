@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, Heart, User } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Search, ShoppingCart, Heart, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
@@ -13,7 +13,10 @@ const Header = () => {
   const cartCount = getCartItemsCount();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const isHomePage = location.pathname === '/';
 
   const handleSignIn = () => {
     navigate("/login");
@@ -23,21 +26,47 @@ const Header = () => {
     navigate("/profile");
   };
 
+  const handleBackClick = () => {
+    navigate(-1);
+  };
+
   return (
     <>
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">V</span>
+            {/* Back Button or Logo */}
+            {!isHomePage ? (
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBackClick}
+                  className="flex items-center space-x-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline">Back</span>
+                </Button>
+                <Link to="/" className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">V</span>
+                  </div>
+                  <div className="hidden sm:block">
+                    <h1 className="text-lg font-bold text-gray-900">Vidya Medical</h1>
+                  </div>
+                </Link>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Vidya Medical</h1>
-                <p className="text-xs text-gray-500">Trusted Healthcare</p>
-              </div>
-            </Link>
+            ) : (
+              <Link to="/" className="flex items-center space-x-2">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">V</span>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">Vidya Medical</h1>
+                  <p className="text-xs text-gray-500">Trusted Healthcare</p>
+                </div>
+              </Link>
+            )}
 
             {/* Search Bar */}
             <div className="flex-1 max-w-2xl mx-8">
@@ -87,33 +116,35 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Navigation Menu */}
-          <nav className="hidden md:flex items-center space-x-12 py-3 border-t">
-            <Link
-              to="/products"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
-              All Products
-            </Link>
-            <Link
-              to="/upload-prescription"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
-              Prescription
-            </Link>
-            <Link
-              to="/products?category=supplements"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
-              Supplements
-            </Link>
-            <Link
-              to="/products?category=personal-care"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
-              Personal Care
-            </Link>
-          </nav>
+          {/* Navigation Menu - Only show on home page */}
+          {isHomePage && (
+            <nav className="hidden md:flex items-center space-x-12 py-3 border-t">
+              <Link
+                to="/products"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                All Products
+              </Link>
+              <Link
+                to="/upload-prescription"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Prescription
+              </Link>
+              <Link
+                to="/products?category=supplements"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Supplements
+              </Link>
+              <Link
+                to="/products?category=personal-care"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Personal Care
+              </Link>
+            </nav>
+          )}
         </div>
       </header>
 
