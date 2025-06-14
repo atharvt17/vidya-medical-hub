@@ -49,7 +49,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:8000/api/cart/?userId=${user.uid}`);
+        const response = await fetch(`http://34.238.235.118:8000/api/cart/?userId=${user.uid}`);
         if (response.ok) {
           const data = await response.json();
           console.log('Fetched cart data:', data);
@@ -107,7 +107,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
 
     try {
-      const response = await fetch('http://localhost:8000/api/cart/', {
+      const response = await fetch('http://34.238.235.118:8000/api/cart/', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCartItems(prev => prev.filter(item => item.id !== id));
 
     try {
-      const response = await fetch(`http://localhost:8000/api/cart/?userId=${user.uid}&product_id=${id}`, {
+      const response = await fetch(`http://34.238.235.118:8000/api/cart/?userId=${user.uid}&product_id=${id}`, {
         method: 'DELETE',
       });
 
@@ -180,7 +180,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCartItems([]);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/cart/?userId=${user.uid}`, {
+      const response = await fetch(`http://34.238.235.118:8000/api/cart/?userId=${user.uid}`, {
         method: 'DELETE',
       });
 

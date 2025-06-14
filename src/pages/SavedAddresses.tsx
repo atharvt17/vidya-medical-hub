@@ -55,7 +55,7 @@ const SavedAddresses = () => {
 
     try {
       setLoadingAddresses(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/get-addresses?firebase_uid=${user.uid}`, {
+      const response = await fetch(`http://34.238.235.118:8000/api/addresses?firebase_uid=${user.uid}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ const SavedAddresses = () => {
   const confirmDeleteAddress = async () => {
   if (addressToDelete && user) {
     try {
-      const response = await fetch('http://localhost:8000/api/delete-address/', {
+      const response = await fetch('http://34.238.235.118:8000/api/delete-address/', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ const SavedAddresses = () => {
     try {
       if (editingAddress) {
         // Edit existing address
-        const response = await fetch('http://127.0.0.1:8000/api/edit-address/', {
+        const response = await fetch('http://34.238.235.118:8000/api/edit-address/', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -199,7 +199,7 @@ const SavedAddresses = () => {
         });
       } else {
         // Add new address
-        const response = await fetch('http://127.0.0.1:8000/api/add-address/', {
+        const response = await fetch('http://34.238.235.118:8000/api/add-address/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -245,7 +245,7 @@ const SavedAddresses = () => {
     if (!user) return;
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/set-default-address/', {
+      const response = await fetch('http://34.238.235.118:8000/api/set-default-address/', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

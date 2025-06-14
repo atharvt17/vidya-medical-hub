@@ -48,7 +48,7 @@ export const AddressSelector = ({ onAddressSelect }: AddressSelectorProps) => {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/get-addresses?firebase_uid=${user.uid}`, {
+      const response = await fetch(`http://34.238.235.118:8000/api/addresses?firebase_uid=${user.uid}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export const AddressSelector = ({ onAddressSelect }: AddressSelectorProps) => {
     if (!user) return;
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/add-address/', {
+      const response = await fetch('http://34.238.235.118:8000/api/add-address/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

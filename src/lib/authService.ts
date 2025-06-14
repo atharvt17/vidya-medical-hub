@@ -2,7 +2,7 @@
 import { auth } from './firebase';
 import { User } from 'firebase/auth';
 
-const DJANGO_API_BASE = 'http://localhost:8000/api';
+const DJANGO_API_BASE = 'http://34.238.235.118:8000/api';
 
 export interface DjangoAuthResponse {
   user: {

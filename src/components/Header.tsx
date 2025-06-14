@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, ShoppingCart, Heart, User, ArrowLeft } from "lucide-react";
@@ -17,6 +16,7 @@ const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const isHomePage = location.pathname === '/';
+  const isProfileRelatedPage = location.pathname === '/saved-addresses' || location.pathname === '/my-orders';
 
   const handleSignIn = () => {
     navigate("/login");
@@ -137,8 +137,8 @@ const Header = () => {
             </nav>
           )}
 
-          {/* Back Button - Only show on non-home pages */}
-          {!isHomePage && (
+          {/* Back Button - Only show on non-home pages and not on profile-related pages */}
+          {!isHomePage && !isProfileRelatedPage && (
             <div className="py-2 border-t">
               <Button
                 variant="ghost"

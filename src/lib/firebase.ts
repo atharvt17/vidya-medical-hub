@@ -9,8 +9,8 @@ const firebaseConfig = {
     projectId: "vidya-medical-store",
     storageBucket: "vidya-medical-store.firebasestorage.app",
     messagingSenderId: "233743943436",
-    appId: "1:233743943436:web:ffd1c4ee3e64b9ea1d6b29",
-    measurementId: "G-828B9JM6R2",
+    appId: "1:233743943436:web:9f236db85a2132b91d6b29",
+    measurementId: "G-1ERYRLERGF"
   };
 
 const app = initializeApp(firebaseConfig)

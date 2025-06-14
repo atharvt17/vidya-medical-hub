@@ -57,7 +57,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   // Send POST request to backend
   try {
-    const response = await fetch("http://localhost:8000/api/cart/", {
+    const response = await fetch("http://34.238.235.118:8000/api/cart/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
