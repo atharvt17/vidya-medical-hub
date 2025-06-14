@@ -1,12 +1,15 @@
+
 import { useState, useMemo, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Filter, Grid, List } from "lucide-react";
+import { Filter, Grid, List, ChevronDown } from "lucide-react";
 import { useQuery } from '@apollo/client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -36,6 +39,8 @@ const Products = () => {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [prescriptionOnly, setPrescriptionOnly] = useState(false);
   const [sortBy, setSortBy] = useState("featured");
+  const [categorySearch, setCategorySearch] = useState("");
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
 
   const products: Product[] = data?.products || [];
 
@@ -118,6 +123,18 @@ const Products = () => {
       count
     }));
   }, [products]);
+
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!categorySearch) return categories;
+    return categories.filter(category =>
+      category.name.toLowerCase().includes(categorySearch.toLowerCase())
+    );
+  }, [categories, categorySearch]);
+
+  // Determine how many categories to show
+  const visibleCategories = categoriesExpanded ? filteredCategories : filteredCategories.slice(0, 5);
+  const hasMoreCategories = filteredCategories.length > 5;
 
   const handleCategoryChange = (categoryId: string, checked: boolean) => {
     if (checked) {
@@ -232,22 +249,67 @@ const Products = () => {
               <Card>
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-gray-900 mb-4">Categories</h3>
-                  <div className="space-y-3">
-                    {categories.map((category) => (
-                      <div key={category.id} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={category.id} 
-                          checked={selectedCategories.includes(category.id)}
-                          onCheckedChange={(checked) => handleCategoryChange(category.id, checked as boolean)}
-                        />
-                        <Label htmlFor={category.id} className="text-sm flex-1 cursor-pointer">
-                          {category.name}
-                        </Label>
-                        <span className="text-xs text-gray-500">({category.count})</span>
-                      </div>
-                    ))}
+                  
+                  {/* Category Search */}
+                  <div className="mb-4">
+                    <Input
+                      placeholder="Search categories..."
+                      value={categorySearch}
+                      onChange={(e) => setCategorySearch(e.target.value)}
+                      className="h-8 text-sm"
+                    />
                   </div>
-                </CardContent>
+
+                  <Collapsible open={categoriesExpanded} onOpenChange={setCategoriesExpanded}>
+                    <div className="space-y-3">
+                      {visibleCategories.map((category) => (
+                        <div key={category.id} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={category.id} 
+                            checked={selectedCategories.includes(category.id)}
+                            onCheckedChange={(checked) => handleCategoryChange(category.id, checked as boolean)}
+                          />
+                          <Label htmlFor={category.id} className="text-sm flex-1 cursor-pointer">
+                            {category.name}
+                          </Label>
+                          <span className="text-xs text-gray-500">({category.count})</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {hasMoreCategories && (
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full mt-3 p-1 h-6 bg-transparent hover:bg-gray-50/50 transition-colors duration-200"
+                        >
+                          <ChevronDown 
+                            className={`h-3 w-3 text-gray-400 opacity-60 transition-all duration-300 ${
+                              categoriesExpanded ? 'rotate-180' : ''
+                            }`} 
+                          />
+                        </Button>
+                      </CollapsibleTrigger>
+                    )}
+
+                    <CollapsibleContent className="space-y-3 pt-3">
+                      {filteredCategories.slice(5).map((category) => (
+                        <div key={category.id} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={category.id} 
+                            checked={selectedCategories.includes(category.id)}
+                            onCheckedChange={(checked) => handleCategoryChange(category.id, checked as boolean)}
+                          />
+                          <Label htmlFor={category.id} className="text-sm flex-1 cursor-pointer">
+                            {category.name}
+                          </Label>
+                          <span className="text-xs text-gray-500">({category.count})</span>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
               </Card>
 
               {/* Price Range Filter */}
