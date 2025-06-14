@@ -1,11 +1,25 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { ArrowRight, Star, Users, Award, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import LoadingScreen from "@/components/LoadingScreen";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { useAuth } from "@/lib/AuthProvider";
+import { apolloClient } from "@/lib/apolloClient";
+import { GET_PRODUCTS } from "@/lib/queries/products";
 
 const Index = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const { loading: cartLoading } = useCart();
+  const { loading: wishlistLoading } = useWishlist();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   const categories = [{
     name: "Prescription Medicines",
     image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=200&fit=crop",
@@ -44,6 +58,65 @@ const Index = () => {
     number: "4.8",
     label: "Customer Rating"
   }];
+
+  const fetchAndStoreProducts = async () => {
+    try {
+      console.log('Fetching all products for session storage...');
+      const { data } = await apolloClient.query({
+        query: GET_PRODUCTS,
+        fetchPolicy: 'network-only'
+      });
+      
+      if (data?.products) {
+        sessionStorage.setItem('vidya_medical_products', JSON.stringify(data.products));
+        console.log('Products stored in session storage:', data.products.length);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      // Wait for auth to complete
+      if (authLoading) return;
+
+      // If user is authenticated, wait for cart and wishlist to load
+      if (user) {
+        if (cartLoading || wishlistLoading) return;
+      }
+
+      // Once cart and wishlist are loaded (or user is not authenticated), fetch products
+      await fetchAndStoreProducts();
+      
+      // Remove loading screen
+      setIsLoading(false);
+    };
+
+    initializeApp();
+  }, [authLoading, cartLoading, wishlistLoading, user]);
+
+  // Check if we're being redirected from another page on reload
+  useEffect(() => {
+    const handlePageReload = () => {
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/' && currentPath !== '/login' && currentPath !== '/signup') {
+        console.log('Page reload detected, redirecting to homepage');
+        navigate('/', { replace: true });
+      }
+    };
+
+    // Check if this is a page reload
+    const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+    if (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') {
+      handlePageReload();
+    }
+  }, [navigate]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
