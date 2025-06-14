@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Filter, Grid, List, ChevronDown } from "lucide-react";
@@ -260,55 +259,36 @@ const Products = () => {
                     />
                   </div>
 
-                  <Collapsible open={categoriesExpanded} onOpenChange={setCategoriesExpanded}>
-                    <div className="space-y-3">
-                      {visibleCategories.map((category) => (
-                        <div key={category.id} className="flex items-center space-x-2">
-                          <Checkbox 
-                            id={category.id} 
-                            checked={selectedCategories.includes(category.id)}
-                            onCheckedChange={(checked) => handleCategoryChange(category.id, checked as boolean)}
-                          />
-                          <Label htmlFor={category.id} className="text-sm flex-1 cursor-pointer">
-                            {category.name}
-                          </Label>
-                          <span className="text-xs text-gray-500">({category.count})</span>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="space-y-3">
+                    {visibleCategories.map((category) => (
+                      <div key={category.id} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={category.id} 
+                          checked={selectedCategories.includes(category.id)}
+                          onCheckedChange={(checked) => handleCategoryChange(category.id, checked as boolean)}
+                        />
+                        <Label htmlFor={category.id} className="text-sm flex-1 cursor-pointer">
+                          {category.name}
+                        </Label>
+                        <span className="text-xs text-gray-500">({category.count})</span>
+                      </div>
+                    ))}
+                  </div>
 
-                    {hasMoreCategories && (
-                      <CollapsibleTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full mt-3 p-1 h-6 bg-transparent hover:bg-gray-50/50 transition-colors duration-200"
-                        >
-                          <ChevronDown 
-                            className={`h-3 w-3 text-gray-400 opacity-60 transition-all duration-300 ${
-                              categoriesExpanded ? 'rotate-180' : ''
-                            }`} 
-                          />
-                        </Button>
-                      </CollapsibleTrigger>
-                    )}
-
-                    <CollapsibleContent className="space-y-3 pt-3">
-                      {filteredCategories.slice(5).map((category) => (
-                        <div key={category.id} className="flex items-center space-x-2">
-                          <Checkbox 
-                            id={category.id} 
-                            checked={selectedCategories.includes(category.id)}
-                            onCheckedChange={(checked) => handleCategoryChange(category.id, checked as boolean)}
-                          />
-                          <Label htmlFor={category.id} className="text-sm flex-1 cursor-pointer">
-                            {category.name}
-                          </Label>
-                          <span className="text-xs text-gray-500">({category.count})</span>
-                        </div>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
+                  {hasMoreCategories && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCategoriesExpanded(!categoriesExpanded)}
+                      className="w-full mt-3 p-1 h-8 bg-gray-100/80 hover:bg-gray-200/80 transition-colors duration-200 border border-gray-200/60"
+                    >
+                      <ChevronDown 
+                        className={`h-4 w-4 text-gray-600 transition-all duration-300 ${
+                          categoriesExpanded ? 'rotate-180' : ''
+                        }`} 
+                      />
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
