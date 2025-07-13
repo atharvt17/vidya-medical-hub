@@ -76,7 +76,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       console.log('Fetching wishlist for user:', user.uid);
-      const response = await fetch(`http://34.238.235.118:8000/api/wishlist/?userId=${user.uid}`);
+      const response = await fetch(`http://44.210.140.152:8000/api/wishlist/?userId=${user.uid}`);
       if (response.ok) {
         const data = await response.json();
         console.log('Wishlist data received:', data);
@@ -111,7 +111,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     toast.success(`${product.name} added to wishlist!`);
 
     try {
-      const response = await fetch('http://34.238.235.118:8000/api/wishlist/', {
+      const response = await fetch('http://44.210.140.152:8000/api/wishlist/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     toast.success('Product removed from wishlist!');
 
     try {
-      const response = await fetch('http://34.238.235.118:8000/api/wishlist/', {
+      const response = await fetch('http://44.210.140.152:8000/api/wishlist/', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
